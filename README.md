@@ -57,7 +57,8 @@ for the application configured in apps.twitter.com
 -  set permissions to 'Read, Write and Access direct messages'
 
 4.  Configure 'bot-config.py' with your IoT device or Bot details.  example config:
-`bot_config ={
+```
+bot_config ={
     "device1" : {                                   # A simple label. e.g. 'thermostat'
         "screen_name": "security_123",              # Twitter screen_name of the device
         "webhook": "http://192.168.0.10/webhook",   # webhook url of the device.  
@@ -68,7 +69,8 @@ for the application configured in apps.twitter.com
         "webhook": "http://192.168.0.11/webhook",
         "users": ["chris_cullin"]
     },
-}`
+}
+```
 
 
 
