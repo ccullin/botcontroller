@@ -1,0 +1,6 @@
+flask
+Flask_OAuthlib
+Flask-OAuth
+TwitterAPI
+pymongo
+
