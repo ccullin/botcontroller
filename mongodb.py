@@ -4,10 +4,10 @@ class Mongodb():
 
     def __init__(self, host='192.168.0.15', port=27017,
                  db='twitter_oauth', collection='keys'):
-        client = MongoClient(host, port)
-        self.db = client[db]
-        self.collection = self.db[collection]
-        self.safe = client[db][collection]
+        self.client = MongoClient(host, port)
+        # self.db = self.client[db]
+        # self.collection = self.db[collection]
+        self.safe = self.client[db][collection]
 
     # OAUTH Key Functions.
     def getAllKeys(self):
@@ -47,4 +47,7 @@ class Mongodb():
         if Bot:
             return Bot['data']
         return None
+        
+    def close(self):
+        self.client.close()
         

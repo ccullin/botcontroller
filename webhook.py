@@ -26,7 +26,7 @@ def main():
     botController = BotController(bot_config, keys)
     
     # Start Flask web service in a thread so its non blocking
-    app_thread = Thread(target=start_app, name='flask-app', args=(botController,), daemon=True)
+    app_thread = Thread(target=start_app, name='flask-app', args=(botController,))
     app_thread.start()
     
     ACCESS_KEY = os.environ.get('ACCESS_KEY')
@@ -54,7 +54,7 @@ def start_app(botctl):
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
-    app.run(host='0.0.0.0', port=443, debug=True, ssl_context=context, use_reloader=False)
+    app.run(host='0.0.0.0', port=443, debug=True, ssl_context=context, use_reloader=False, processes=5)
 
 
 

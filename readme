@@ -1,0 +1,8 @@
+The alarmMonitor python source is located at '/usr/local/src/alarmmonitor' and
+the init.d script is '/etc/init.d/alarmMonitor'.
+
+'setup.sh' 
+- moves files to correct directories
+- sets the file permissions and
+- configures 'alarmMonitor' to run on boot
+

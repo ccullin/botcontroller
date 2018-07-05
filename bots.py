@@ -25,10 +25,12 @@ class BotController(object):
         log.debug('command = {}'.format(command))
         bot = command.get('recipient')
         if bot in self.bots:
-            self.bots[bot].sendCommand(command)
+            r = self.bots[bot].sendCommand(command)
         else:
             log.error("Bot '{}' not found".format(bot))
             log.debug("dump of self.bots: {}".format(self.bots))
+            r = HTTPStatus.NOT_FOUND
+        return (r)
     
             
     def registerBot(self, name):
@@ -43,8 +45,10 @@ class BotController(object):
     #         log.error("Bot '{}' not found".format(bot))
     #         log.debug("dump of self.bots: {}".format(self.bots))
             
-
-    
+    def sendDirectMessage(self, msg, sender, recipientId):
+        if self.bots[sender].access_key != None:
+            self.bots[sender].sendDirectMessage(msg, recipientId)
+        
 
 class Bot(object):
     def __init__(self, config, keysDB):
@@ -76,20 +80,22 @@ class Bot(object):
     
     def sendCommand(self, command):
         log.debug("sending url: {} command: {}".format(self.url, command))
-        #r = requests.put(self.url, data = command)
-        r = requests.get('https://api.github.com/events')
+        r = requests.post(self.url, json=command)
+        log.debug("request url is: {}".format(r.url))
+        #r = requests.get('https://api.github.com/events')
 
         if r.status_code != 200:
             log.info("Error processing command.  errorno: {}, {}".format(r.status_code, r.text))
-            self.sendDirectMessage("Error processing command.  errorno: {}, {}".format(r.status_code, r.text), 
-                                    command.get('senderId'))
-        else:
-            self.sendDirectMessage("Command successful", command.get('senderId'))
-        
+            # self.sendDirectMessage("Error processing command.  errorno: {}, {}".format(r.status_code, r.text), 
+            #                         command.get('senderId'))
+        # else:
+        #     self.sendDirectMessage("Command successful", command.get('senderId'))
+        #     return ('', HTTPStatus.OK)
+        return r.status_code
         
     def sendDirectMessage(self, msg, recipientId):
         log.debug("sending user: {} response".format(recipientId))
         r = Twitter.sendDirectMessage(msg, recipientId, self.access_key, self.access_secret)
         
         if r != 200:
-            log.error("ERROR: ", r)
+            log.error("ERROR: {}".format(r))

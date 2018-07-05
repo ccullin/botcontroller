@@ -54,7 +54,6 @@ def sendDirectMessage(messageText, userID, ACCESS_KEY, ACCESS_SECRET):
     log.debug("send msg: {} to user: {}".format(messageText, userID))
     # ACCESS_KEY = os.environ.get('ACCESS_KEY')
     # ACCESS_SECRET = os.environ.get('ACCESS_SECRET')
-    log.debug("tokens: {}, {}".format(ACCESS_KEY, ACCESS_SECRET))
     twitterAPI = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/wnv python3
 from flask import Flask, request, send_from_directory, make_response, Blueprint, \
-redirect, url_for, g, flash, render_template
+redirect, url_for, g, flash, render_template, jsonify
 from http import HTTPStatus
 from flask_oauth import OAuth
 import hashlib, hmac, base64, os, logging, json
@@ -8,6 +8,7 @@ import Twitter
 import ssl
 # from TwitterAPI import TwitterAPI
 from time import sleep
+from mongodb import Mongodb
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -49,7 +50,6 @@ twitter = oauth.remote_app('twitter',
     consumer_key=CONSUMER_KEY,
     consumer_secret=CONSUMER_SECRET
 )
-
 
 #generic index route    
 @app.route('/webhook')
@@ -104,11 +104,13 @@ def oauth_authorized(resp):
         'oauth_token_secret': resp['oauth_token_secret']
     }
     
-    keys = app.config['keys']
+    #keys = app.config['keys']
+    keys = Mongdb()
     keys.storeKey(oauth_keys)
     # app.config['keys'].store(oauth_keys)
     # app.config['botContoller'].webhook_subscribe(screen_name)
-    return"all done" 
+    keys.close()
+    return ("all done") 
 
 
 @twitter.tokengetter
@@ -149,15 +151,20 @@ def webhook_challenge():
 #The POST method for webhook should be used for all other API events
 @app.route("/webhook/twitter", methods=["POST"])
 def twitterEventReceived():
+    
+    # def processEvent(app, command):
+    #     app.config['botController'].newCommand(command)
+        
+    
     log.debug("POST request")	
-    print("print: POST request")
+    print("POST request")
     requestJson = request.get_json()
 
     # Ignore evenerything that i snot a direct message.
     if 'direct_message_events' in requestJson.keys():
         #dump to console for debugging purposes
-        print("dump of request json")
-        print(json.dumps(requestJson, indent=4, sort_keys=True))
+        # print("dump of request json")
+        # print(json.dumps(requestJson, indent=4, sort_keys=True))
                           
         #DM recieved, process that
         eventType = requestJson['direct_message_events'][0].get("type")
@@ -175,19 +182,40 @@ def twitterEventReceived():
         sender = users.get(senderId).get('screen_name')
         recipient = users.get(recipientId).get('screen_name')
         
-        print("sender name: {}, id: {}".format(sender, senderId))
-        print("recipient name: {}, id: {}".format(recipient, recipientId))
+        log.debug("sender name: {}, id: {}".format(sender, senderId))
+        log.debug("recipient name: {}, id: {}".format(recipient, recipientId))
         
-        keys = app.config['keys']
+        #keys = app.config['keys']
+        keys = Mongodb()
         if keys.isBot(recipientId):
             command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient}      
-            app.config['botController'].newCommand(command)
-        
-        return ('', HTTPStatus.OK)
+            r = app.config['botController'].newCommand(command)
+            #thread.start_new_thread(processEvent, (app, command))
+        else:
+            r = HTTPStatus.NOT_FOUND
+        keys.close()
+        return ('', r)
 
     else:
         #Event type not supported
         return ('', HTTPStatus.OK)
     
     return ('', HTTPStatus.OK)
+
+
+
+        
+#Notification from alarm
+@app.route("/webhook/alarm", methods=["POST"])
+def alarmEventReceived():
+    log.debug("POST request")	
+    requestJson = request.get_json()
+    msg = requestJson.get('message')
+    sender = requestJson.get('sender')
+    recipientId = requestJson.get('recipientId')
+    
+    print("request: {}".format(requestJson))
+    app.config['botController'].sendDirectMessage(msg, sender, recipientId)
+    return ('', HTTPStatus.OK)
+
 
