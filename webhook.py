@@ -2,6 +2,7 @@
 from time import sleep
 from threading import Thread
 import ssl
+import sys, signal
 
 # local imports
 from routes import app
@@ -9,17 +10,39 @@ from bots import BotController
 from config import config
 from logger import log
 
+class ServiceExit(Exception):
+    """
+    Custom exception which is used to trigger the clean exit
+    of all running threads and the main program.
+    """
+    pass
+
+
+def service_shutdown(signum, frame):
+    log.info('Caught signal %d' % signum)
+    raise ServiceExit
 
 
 
 def main():
-    botController = BotController(config)
+    # Register the signal handlers
+    signal.signal(signal.SIGTERM, service_shutdown)
+    signal.signal(signal.SIGINT, service_shutdown)
     
-    # Start Flask web service in a thread so its non blocking
-    app_thread = Thread(target=start_app, name='flask-app', args=(config.get('app'), botController))
-    app_thread.start()
-    
-    botController.run()
+    try:
+        botController = BotController(config)
+        
+        # Start Flask web service in a thread so its non blocking
+        app_thread = Thread(target=start_app, name='flask-app', args=(config.get('app'), botController), daemon=True)
+        app_thread.start()
+
+        botController.run()
+        while True:
+            sleep(2)
+
+    except ServiceExit:
+        log.info("Shutting Down")
+        sys.exit(0)
     
         
 def start_app(config, botctl):
@@ -36,10 +59,6 @@ def start_app(config, botctl):
 
             
 if __name__ == "__main__" :
-    log.debug("starting main")
     main()
-    while True:
-        sleep(2)
-    log.info("program exiting")
-    
+
     

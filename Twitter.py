@@ -24,8 +24,8 @@ def create_webhook(WEBHOOK_URL, ENVNAME, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_K
     log.debug("create webhook request")
     twitterAPI = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
     r = twitterAPI.request('account_activity/all/:%s/webhooks' % ENVNAME, {'url': WEBHOOK_URL}, None, "POST")
-    # text = json.loads(r.text)
-    # message = text.get('errors')[0].get('message')
+    text = json.loads(r.text)
+    message = text.get('errors')[0].get('message')
 
     if r.status_code == HTTPStatus.OK:
         return r.status_code

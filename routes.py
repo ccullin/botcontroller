@@ -8,7 +8,7 @@ from time import sleep
 #local imports
 import Twitter
 from mongodb import Mongodb
-form logger import log
+from logger import log
 from config import config
 
 
