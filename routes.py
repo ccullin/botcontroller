@@ -1,44 +1,32 @@
-#!/usr/bin/wnv python3
-from flask import Flask, request, send_from_directory, make_response, Blueprint, \
-redirect, url_for, g, flash, render_template, jsonify
-from http import HTTPStatus
+# #!/usr/bin/wnv python3
+from flask import Flask, request, url_for, jsonify
 from flask_oauth import OAuth
-import hashlib, hmac, base64, os, logging, json
-import Twitter
-import ssl
-# from TwitterAPI import TwitterAPI
+from http import HTTPStatus
+import hashlib, hmac, base64, json
 from time import sleep
+
+#local imports
+import Twitter
 from mongodb import Mongodb
+form logger import log
+from config import config
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-console = logging.StreamHandler()
-formatter = logging.Formatter('%(name)s - %(levelname)s - %(threadName)s - %(module)s - %(lineno)d:  %(message)s')
-console.setFormatter(formatter)
-log.addHandler(console)
-
-
-CONSUMER_KEY = os.getenv('CONSUMER_KEY', None)
-CONSUMER_SECRET = os.getenv('CONSUMER_SECRET', None)
-
-# ACCESS_TOKEN = os.getenv('ACCESS_TOKEN', None)
-# ACCESS_TOKEN_SECRET = os.getenv('ACCESS_TOKEN_SECRET', None)
-
-#The environment name for the beta is filled below. Will need changing in future		
-ENVNAME = os.getenv('ENVNAME', None)
-WEBHOOK_URL = os.getenv('WEBHOOK_URL', None)
-
-
-#CURRENT_USER_ID = os.getenv('CURRENT_USER_ID', None)
 
 log.debug("run app")
 app = Flask(__name__)
+
 
 
 #user login requirements
 oauth = OAuth()
 
 # Use Twitter as example remote application
+
+api_tokens = config.get('controller').get('api_tokens')
+# webhook = config.get('contoller').get('webhook')
+# ENVNAME = webhook.get('ENVNAME')
+# WEBHOOK_URL = webhook.get('WEBHOOK_URL')
+
 twitter = oauth.remote_app('twitter',
     # unless absolute urls are used to make requests, this will be added
     # before all URLs.  This is also true for request_token_url and others.
@@ -47,9 +35,10 @@ twitter = oauth.remote_app('twitter',
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url= 'https://api.twitter.com/oauth/access_token',
     authorize_url=    'https://api.twitter.com/oauth/authorize',
-    consumer_key=CONSUMER_KEY,
-    consumer_secret=CONSUMER_SECRET
+    consumer_key=api_tokens.get('CONSUMER_KEY'),
+    consumer_secret=api_tokens.get('CONSUMER_SECRET')
 )
+
 
 #generic index route    
 @app.route('/webhook')
@@ -127,12 +116,10 @@ def webhook_challenge():
     
     log.debug("in web_challenge")
     #log.debug("request = ", request)
-    log.debug("crc token= ", request.args.get('crc_token'))
-    log.debug("Consumer_SECRET= ", CONSUMER_SECRET)
-    
+
 
     validation = hmac.new(
-	key=bytes(CONSUMER_SECRET, 'utf-8'),
+	key=bytes(api_tokens.get('CONSUMER_SECRET'), 'utf-8'),
 	msg=bytes(request.args.get('crc_token'), 'utf-8'),
 	digestmod=hashlib.sha256
     )
