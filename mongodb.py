@@ -1,15 +1,17 @@
 from pymongo import MongoClient
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class Mongodb():
 
     def __init__(self, host='192.168.0.15', port=27017,
                  db='twitter_oauth', collection='keys'):
         self.client = MongoClient(host, port)
-        # self.db = self.client[db]
-        # self.collection = self.db[collection]
         self.safe = self.client[db][collection]
 
-    # OAUTH Key Functions.
+
     def getAllKeys(self):
         keys = self.safe.find({ 'name': { '$exists': True }})
         if keys:
@@ -40,13 +42,14 @@ class Mongodb():
     def deleteKey(self, screen_name):
         self.safe.delete({'name': screen_name})
         return
+
     
-    #Bot data
     def getBotConfig(self, botName):
         bot = self.safe.find_one({'name': botName})
         if Bot:
             return Bot['data']
         return None
+
         
     def close(self):
         self.client.close()

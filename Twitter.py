@@ -1,9 +1,12 @@
 from TwitterAPI import TwitterAPI
 from http import HTTPStatus
 import json
+import logging
 
 #local imports
-from logger import log
+
+log = logging.getLogger(__name__)
+
 
 def sendDirectMessage(messageText, userID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET):
     log.debug("send msg: {} to user: {}".format(messageText, userID))

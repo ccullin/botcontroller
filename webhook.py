@@ -1,14 +1,20 @@
-#!/usr/bin/wnv python3
+#!/usr/bin/env python3
 from time import sleep
 from threading import Thread
 import ssl
 import sys, signal
+import logging
 
 # local imports
 from routes import app
 from bots import BotController
 from config import config
-from logger import log
+import logger
+
+
+# logger for this module
+log = logging.getLogger(__name__)
+
 
 class ServiceExit(Exception):
     """

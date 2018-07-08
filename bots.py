@@ -1,11 +1,12 @@
 import requests
 from http import HTTPStatus
+import logging
 
 #local imports
 import Twitter
 from mongodb import Mongodb
-from logger import log
-    
+
+log = logging.getLogger(__name__)
 
 class BotController(object):
     def __init__(self, config):
@@ -53,12 +54,8 @@ class BotController(object):
     
             
     def registerBot(self, name):
-        log.debug(name)
         if self.bots[name].access_tokens != None:
             # self.bots[name].webhook_subscribe()
-            log.debug(self.webhook)
-            log.debug(self.api_tokens)
-            log.debug(self.bots[name].access_tokens)
             r = Twitter.webhook_subscribe(**self.webhook, **self.api_tokens, **self.bots[name].access_tokens)
             if r == 348:
                 log.warning("Webhook access to {} not permitted".format(self.name))
@@ -66,17 +63,8 @@ class BotController(object):
             return r
 
     
-    # def sendDirectMessage(self, msg, sendto):
-    #     if bot in self.bots:
-    #         self.bots[name].sendDirectMessage(msg)
-    #     else:
-    #         log.error("Bot '{}' not found".format(bot))
-    #         log.debug("dump of self.bots: {}".format(self.bots))
-
-            
     def sendDirectMessage(self, msg, sender, recipientId):
         if self.bots[sender].access_tokens != None:
-            # self.bots[sender].sendDirectMessage(msg, recipientId)
             r = Twitter.sendDirectMessage(msg, recipientId, **self.api_tokens, **self.bots[sender].access_tokens)
         
         if r != HTTPStatus.OK:
@@ -89,21 +77,10 @@ class Bot(object):
         self.name = config.get('screen_name')
         self.url = config.get("webhook")
         self.db = keysDB
-        # self.ctlr = api_tokens
-        # self.access_key = None
-        # self.access_secret = None
         self.access_tokens = {}
         self.__getKeys()
 
 
-    # def webhook_subscribe(self):
-    #     r = Twitter.webhook_subscribe(**self.webhook, **self.ctlr_tokens, self.access_key, self.access_secret)
-    #     if r == 348:
-    #         log.warning("Webhook access to {} not permitted".format(self.name))
-    #         log.warning("Go to /login to authorize this app to access bot account")
-    #     return r
-    
-            
     def __getKeys(self):
         keys = self.db.getKeys(self.name)
         if keys != None:
@@ -112,27 +89,14 @@ class Bot(object):
             self.access_tokens = {"ACCESS_KEY": access_key, "ACCESS_SECRET": access_secret}
             # self.webhook_subscribe()
             return
-        log.error("error retrieving keys.  Check webhook has subscribed to user {}".format(self.name))
+        log.warning("error retrieving keys.  Check webhook has subscribed to user {}".format(self.name))
     
     
     def sendCommand(self, command):
         log.debug("sending url: {} command: {}".format(self.url, command))
         r = requests.post(self.url, json=command)
         log.debug("request url is: {}".format(r.url))
-        #r = requests.get('https://api.github.com/events')
 
         if r.status_code != 200:
             log.info("Error processing command.  errorno: {}, {}".format(r.status_code, r.text))
-            # self.sendDirectMessage("Error processing command.  errorno: {}, {}".format(r.status_code, r.text), 
-            #                         command.get('senderId'))
-        # else:
-        #     self.sendDirectMessage("Command successful", command.get('senderId'))
-        #     return ('', HTTPStatus.OK)
         return r.status_code
-        
-    # def sendDirectMessage(self, msg, recipientId):
-    #     log.debug("sending user: {} response".format(recipientId))
-    #     r = Twitter.sendDirectMessage(msg, recipientId, **self.api_tokens, self.access_key, self.access_secret)
-        
-    #     if r != 200:
-    #         log.error("ERROR: {}".format(r))
