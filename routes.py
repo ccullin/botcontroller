@@ -153,11 +153,11 @@ def twitterEventReceived():
 @app.route("/webhook/alarm", methods=["POST"])
 def alarmEventReceived():
     log.debug("POST request")	
-    log.debug("request: {}".format(requestJson))
     requestJson = request.get_json()
     msg = requestJson.get('message')
     sender = requestJson.get('sender')
     recipientId = requestJson.get('recipientId')
+    log.debug("request: {}".format(requestJson))
     
     # Forward venet to botController so it can send out as the bot.
     app.config['botController'].sendDirectMessage(msg, sender, recipientId)
