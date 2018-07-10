@@ -12,10 +12,12 @@ from mongodb import Mongodb
 from config import config
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
-log.debug("run app")
 app = Flask(__name__)
 
+# app.logger.setLevel(logging.INFO)
+log.info("run app")
 
 
 #user login requirements
@@ -67,12 +69,11 @@ def oauth_authorized(resp):
     """
         Callback function.  Called by Twitter after user logs in
     """
-    log.debug('in oauth_authorized after callback')
+    log.debug('oauth authorised response= {}'.format(resp))
 
     if resp is None:
         return(u'You denied the request to sign in.')
 
-    log.debug('response= {}'.format(resp))
     oauth_keys = {
         'uid': resp['user_id'],
         'screen_name': resp['screen_name'],
@@ -81,7 +82,7 @@ def oauth_authorized(resp):
     }
     
     # Save keys to DB.
-    keys = Mongdb()
+    keys = Mongodb()
     keys.storeKey(oauth_keys)
     keys.close()
     return ("all done") 
@@ -110,12 +111,17 @@ def webhook_challenge():
     return json.dumps(response)   
   
 
-# Thsi is the Webhook Twitters posts and subscribed events to.
+# This is the Webhook Twitter posts events to for subscribed accounts.
 @app.route("/webhook/twitter", methods=["POST"])
 def twitterEventReceived():
     log.debug("POST request")	
     requestJson = request.get_json()
 
+    def valid_user(bot_name, user):
+        bot_config = config.get("bots").get(bot_name)
+        valid_users = bot_config.get("users")
+        return (user in valid_users)
+            
     # Ignore evenerything that is not a direct message.
     if 'direct_message_events' in requestJson.keys():
         eventType = requestJson['direct_message_events'][0].get("type")
@@ -131,36 +137,39 @@ def twitterEventReceived():
         users = requestJson.get('users')
         sender = users.get(senderId).get('screen_name')
         recipient = users.get(recipientId).get('screen_name')
-        
         log.debug("sender name: {}, id: {}".format(sender, senderId))
         log.debug("recipient name: {}, id: {}".format(recipient, recipientId))
         
         keys = Mongodb()
-        # Check if message sent to one of the configured and registers bots.
-        if keys.isBot(recipientId):
+        if keys.isBot(botname=sender):
+            # Ignore if this is a confirmation message from a bot.
+            r = ('', HTTPStatus.OK)
+        elif keys.isBot(botId=recipientId) and valid_user(recipient, sender):
+            # If message from valid user and to a registered bot then process.
             command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient}      
             r = app.config['botController'].newCommand(command)
         else:
-            r = HTTPStatus.NOT_FOUND
+            r = ('', HTTPStatus.UNAUTHORIZED)
         keys.close()
-        return ('', r)
+        
+        log.debug("response {}".format(r))
+        return (r)
     else:
         # Event type not supported so just ignore
         return ('', HTTPStatus.OK)
 
 
-# Webhook to receive events from alarm
-@app.route("/webhook/alarm", methods=["POST"])
-def alarmEventReceived():
-    log.debug("POST request")	
+
+# Webhook to receive events from bots
+@app.route("/webhook/bot", methods=["POST"])
+def botEventReceived():
     requestJson = request.get_json()
     msg = requestJson.get('message')
     sender = requestJson.get('sender')
     recipientId = requestJson.get('recipientId')
-    log.debug("request: {}".format(requestJson))
+    log.debug("Post request received from bot: {}".format(requestJson))
     
-    # Forward venet to botController so it can send out as the bot.
-    app.config['botController'].sendDirectMessage(msg, sender, recipientId)
-    return ('', HTTPStatus.OK)
-
+    # Forward event to botController so it can notify admins as the bot.
+    r = app.config['botController'].sendDirectMessage(msg, sender, recipientId)
+    return (r)
 

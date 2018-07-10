@@ -23,8 +23,13 @@ class Mongodb():
         return(self.safe.find_one({ 'name': screen_name }))
 
 
-    def isBot(self, userID):
-        return(self.safe.find_one({ 'uid': userID }))
+    def isBot(self, **kwargs):
+        botId = kwargs.get('botId', None)
+        botname = kwargs.get('botname',None)
+        if botId != None:
+            return(self.safe.find_one({ 'uid': botId }))
+        else:
+            return(self.safe.find_one({'name': botname}))
  
 
     

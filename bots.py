@@ -8,6 +8,7 @@ from mongodb import Mongodb
 
 log = logging.getLogger(__name__)
 
+
 class BotController(object):
     def __init__(self, config):
         self.bots = {}
@@ -24,7 +25,6 @@ class BotController(object):
     
     def __create_webhook(self):
         r = Twitter.create_webhook(**self.webhook, **self.api_tokens, **self.access_tokens)
-        
         if r != HTTPStatus.OK:
             log.error("webhook registration failed.  Error: {}".format(r))
             exit()
@@ -49,7 +49,7 @@ class BotController(object):
         else:
             log.error("Bot '{}' not found".format(bot))
             log.debug("dump of self.bots: {}".format(self.bots))
-            r = HTTPStatus.NOT_FOUND
+            r = ('', HTTPStatus.NOT_FOUND)
         return (r)
     
             
@@ -65,10 +65,14 @@ class BotController(object):
     
     def sendDirectMessage(self, msg, sender, recipientId):
         if self.bots[sender].access_tokens != None:
-            r = Twitter.sendDirectMessage(msg, recipientId, **self.api_tokens, **self.bots[sender].access_tokens)
-        
-        if r != HTTPStatus.OK:
-            log.error("ERROR: {}".format(r))
+            log.debug("sending '{}', to '{}' from '{}'".format(msg, recipientId, sender))
+            if recipientId == "admins":
+                for admin, adminId in self.bots[sender].admins.items():
+                    r = Twitter.sendDirectMessage(msg, adminId, **self.api_tokens, **self.bots[sender].access_tokens)
+            else:
+                Twitter.sendDirectMessage(msg, recipientId, **self.api_tokens, **self.bots[sender].access_tokens)
+            return ('', HTTPStatus.OK)
+        return ('Invalid bot config.', HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 
@@ -77,6 +81,7 @@ class Bot(object):
         self.name = config.get('screen_name')
         self.url = config.get("webhook")
         self.db = keysDB
+        self.admins = config.get("admins")
         self.access_tokens = {}
         self.__getKeys()
 
@@ -87,7 +92,6 @@ class Bot(object):
             access_key = keys.get('oauth_token')
             access_secret = keys.get('oauth_token_secret')
             self.access_tokens = {"ACCESS_KEY": access_key, "ACCESS_SECRET": access_secret}
-            # self.webhook_subscribe()
             return
         log.warning("error retrieving keys.  Check webhook has subscribed to user {}".format(self.name))
     
@@ -96,7 +100,7 @@ class Bot(object):
         log.debug("sending url: {} command: {}".format(self.url, command))
         r = requests.post(self.url, json=command)
         log.debug("request url is: {}".format(r.url))
-
+        log.debug("response is: {}".format(r.text))
         if r.status_code != 200:
             log.info("Error processing command.  errorno: {}, {}".format(r.status_code, r.text))
-        return r.status_code
+        return (r.text, r.status_code)

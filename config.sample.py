@@ -1,13 +1,19 @@
 bot_config ={
-    "general bot name" : {
+    "screen_name" : {
         "screen_name": "twitter screen_name of bot",
         "webhook": "url of the bots webhook",
-        "users": ["screen_name of admin 1", "admin 2"]
+        "users": ["screen_name of user 1 that can send commands", "user 2"]
+        "admins": {
+            "screen name of admin 1 that will receive event notifications": "twitter uid",
+            "screen name of admin 2": "twitter uid",
+        },
+
     },
-    "thermostat" : {
+    "mithermostat" : {
         "screen_name": "mithermostat",
         "webhook": "http://192.168.1.15/webhook",
         "users": ["chris_cullin",]
+        "admins": {"chris_cullin": "123456"
     },
     "controller": {
         "api_tokens": {

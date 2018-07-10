@@ -11,9 +11,25 @@ log = logging.getLogger(__name__)
 def sendDirectMessage(messageText, userID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET):
     log.debug("send msg: {} to user: {}".format(messageText, userID))
     twitterAPI = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
-    messageJson = '{"event": {"type": "message_create", "message_create": {"target": {"recipient_id": "' + userID + '"}, "message_data": {"text": "' + messageText + '"}}}}'
-    r = twitterAPI.request('direct_messages/events/new', messageJson)
+    message = {
+        "event": {
+            "type": "message_create", 
+            "message_create": {
+                "target": {
+                    "recipient_id": userID
+                }, 
+                "message_data": {
+                    "text": messageText
+                }
+            }
+        }
+    }
+    
+    log.debug("message text:")
+    log.debug(json.dumps(message))
+    r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
     log.debug("response code: {}".format(r.status_code))
+
     return r.status_code      
 
 
