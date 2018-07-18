@@ -123,40 +123,48 @@ def twitterEventReceived():
         return (user in valid_users)
             
     # Ignore evenerything that is not a direct message.
-    if 'direct_message_events' in requestJson.keys():
-        eventType = requestJson['direct_message_events'][0].get("type")
-        messageObject = requestJson['direct_message_events'][0].get('message_create', {})
-        senderId = messageObject.get('sender_id')
-        recipientId = messageObject.get('target').get('recipient_id')
-        
-        # If event type isnt new message then ignore.
-        if eventType != 'message_create':
-            return ('', HTTPStatus.OK)
-        
-        messageText = messageObject.get('message_data').get('text')
-        users = requestJson.get('users')
-        sender = users.get(senderId).get('screen_name')
-        recipient = users.get(recipientId).get('screen_name')
-        log.debug("sender name: {}, id: {}".format(sender, senderId))
-        log.debug("recipient name: {}, id: {}".format(recipient, recipientId))
-        
-        keys = Mongodb()
-        if keys.isBot(botname=sender):
-            # Ignore if this is a confirmation message from a bot.
-            r = ('', HTTPStatus.OK)
-        elif keys.isBot(botId=recipientId) and valid_user(recipient, sender):
-            # If message from valid user and to a registered bot then process.
-            command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient}      
-            r = app.config['botController'].newCommand(command)
-        else:
-            r = ('', HTTPStatus.UNAUTHORIZED)
-        keys.close()
-        
-        log.debug("response {}".format(r))
-        return (r)
-    else:
+    if 'direct_message_events' not in requestJson.keys():
         # Event type not supported so just ignore
         return ('', HTTPStatus.OK)
+        
+    # Ignore if not a new message.
+    eventType = requestJson['direct_message_events'][0].get("type")
+    if eventType != 'message_create':
+        return ('', HTTPStatus.OK)
+    
+    messageObject = requestJson['direct_message_events'][0].get('message_create', {})
+    messageText =   messageObject.get('message_data').get('text')
+    senderId =      messageObject.get('sender_id')
+    recipientId =   messageObject.get('target').get('recipient_id')
+
+    users =         requestJson.get('users')
+    sender =        users.get(senderId).get('screen_name')
+    recipient =     users.get(recipientId).get('screen_name')
+    
+    log.debug("sender name: {}, id: {}".format(sender, senderId))
+    log.debug("recipient name: {}, id: {}".format(recipient, recipientId))
+    
+    keys = Mongodb()
+    # if keys.isBot(botname=sender):
+    #     # Ignore if this is a confirmation message from a bot.
+    #     return('', HTTPStatus.OK)
+    # elif keys.isBot(botId=recipientId) and valid_user(recipient, sender):
+    if keys.isBot(botId=recipientId) and valid_user(recipient, sender):
+        # If message from valid user and to a registered bot then process.
+        command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient} 
+        log.debug(command)
+        try:
+            r = app.config['botController'].newCommand(command)
+        except Exception as e:
+            log.error("Error sending command: {}".format(e))
+            app.config['botController'].sendDirectMessage(msg="Error sending command:  Bot not Found", sender=recipient, recipientId=senderId)
+            r = ('Error sending command', HTTPStatus.NOT_FOUND)
+    else:
+        r = ('', HTTPStatus.OK)
+        
+    log.debug("response: '{}'".format(r))
+    keys.close()
+    return (r)
 
 
 

@@ -7,6 +7,7 @@ import Twitter
 from mongodb import Mongodb
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class BotController(object):
@@ -46,6 +47,7 @@ class BotController(object):
         bot = command.get('recipient')
         if bot in self.bots:
             r = self.bots[bot].sendCommand(command)
+            log.debug("response: '{}'".format(r))
         else:
             log.error("Bot '{}' not found".format(bot))
             log.debug("dump of self.bots: {}".format(self.bots))
@@ -99,8 +101,20 @@ class Bot(object):
     def sendCommand(self, command):
         log.debug("sending url: {} command: {}".format(self.url, command))
         r = requests.post(self.url, json=command)
-        log.debug("request url is: {}".format(r.url))
-        log.debug("response is: {}".format(r.text))
-        if r.status_code != 200:
+        log.debug("response is: {}".format(r))
+        if r.status_code != HTTPStatus.OK:
             log.info("Error processing command.  errorno: {}, {}".format(r.status_code, r.text))
         return (r.text, r.status_code)
+ 
+        # try:
+        #     r = requests.post(self.url, json=command)
+        # except Exception as e:
+        #     r = {"text": 'error sending command to' + self.name, "status_code": HTTPStatus.SERVICE_UNAVAILABLE}
+        #     log.error("Error sending command: {}".format(e))
+        #     log.debug("response is: {}".format(r))
+        #     return None
+        # else:
+        #     if r.status_code != HTTPStatus.OK:
+        #         log.info("Error processing command.  errorno: {}, {}".format(r.status_code, r.text))
+        #     return (r.text, r.status_code)
+    

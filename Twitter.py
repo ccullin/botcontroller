@@ -6,10 +6,10 @@ import logging
 #local imports
 
 log = logging.getLogger(__name__)
-
+log.setLevel(logging.DEBUG)
 
 def sendDirectMessage(messageText, userID, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET):
-    log.debug("send msg: {} to user: {}".format(messageText, userID))
+    log.debug("send msg: '{}' to user: '{}'".format(messageText, userID))
     twitterAPI = TwitterAPI(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
     message = {
         "event": {
