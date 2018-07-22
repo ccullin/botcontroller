@@ -1,8 +1,17 @@
-The alarmMonitor python source is located at '/usr/local/src/alarmmonitor' and
+The twitterWebhook python source is located at '/usr/local/src/botController' and
 the init.d script is '/etc/init.d/alarmMonitor'.
 
-'setup.sh' 
+Setup optoin 1.
+- ./setup.sh 
 - moves files to correct directories
 - sets the file permissions and
 - configures 'alarmMonitor' to run on boot
+- sudo service botController start
 
+Setup option 2 - DOCKER
+1. after building on the dev system
+    docker push homebots/botController
+2. on destination Raspberry Pi
+    sudo docker pull homebots/botController
+4. RUN
+    docker run --name=botController -it -d -p 443:443 homebots/botController:latest
