@@ -5,13 +5,13 @@ Setup optoin 1.
 - ./setup.sh 
 - moves files to correct directories
 - sets the file permissions and
-- configures 'alarmMonitor' to run on boot
+- configures 'botController' to run on boot
 - sudo service botController start
 
 Setup option 2 - DOCKER
 1. after building on the dev system
-    docker push homebots/botController
+    docker push homebots/botcontroller
 2. on destination Raspberry Pi
-    sudo docker pull homebots/botController
+    sudo docker pull homebots/botcontroller
 4. RUN
-    docker run --name=botController -it -d -p 443:443 homebots/botController:latest
+    docker run --name=botcontroller -it -d -p 80:80 -p 443:443 homebots/botcontroller:latest
