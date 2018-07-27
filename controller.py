@@ -4,6 +4,7 @@ from threading import Thread
 import ssl
 import sys, signal
 import logging
+import paho.mqtt.client as mqtt
 
 # local imports
 from routes import app
@@ -36,6 +37,23 @@ def main():
     signal.signal(signal.SIGTERM, service_shutdown)
     signal.signal(signal.SIGINT, service_shutdown)
     
+    # MQTT setup
+    broker='localhost:9000'
+    client =mqtt.Client(botcontoller)
+    #client.connect(host, port=9000, keepalive=60, bind_address="192.168.0.4")
+    client.connect(broker)
+    client.on_connect=onconnect
+    client.loop_start()
+    
+    
+    def on_connect(client, userdata, flags, rc):
+        if rc==0:
+            print("connected OK Returned code=",rc)
+        else:
+            print("Bad connection Returned code=",rc)
+        
+        
+    
     try:
         botController = BotController(config)
         
@@ -48,6 +66,8 @@ def main():
             sleep(2)
 
     except ServiceExit:
+        client.loop_stop()
+        client.disconnect()
         log.info("Shutting Down")
         sys.exit(0)
     

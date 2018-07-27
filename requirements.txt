@@ -5,4 +5,4 @@ Flask_OAuthlib
 Flask-OAuth
 TwitterAPI
 pymongo
-
+paho-mqtt
