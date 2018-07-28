@@ -167,7 +167,7 @@ def twitterEventReceived():
     return (r)
 
 
-
+## will be replaced with mqtt on_message
 # Webhook to receive events from bots
 @app.route("/webhook/bot", methods=["POST"])
 def botEventReceived():
@@ -181,3 +181,8 @@ def botEventReceived():
     r = app.config['botController'].sendDirectMessage(msg, sender, recipientId)
     return (r)
 
+
+# might need to add a twiter send here.  Or use Twitter.py, but then
+# its spread over two files.
+#  This file becomes the TWitter API.
+# and another would be Facebook.py

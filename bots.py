@@ -1,6 +1,7 @@
 import requests
 from http import HTTPStatus
 import logging
+from mqtt import MQTT
 
 #local imports
 import Twitter
@@ -15,6 +16,7 @@ class BotController(object):
         self.bots = {}
         self.keysDB = Mongodb()
         self.__load_config(config)
+        self.mqtt = MQTT('192.168.0.4', name="botcontroller")
 
         
     def __load_config(self, config):
@@ -23,15 +25,15 @@ class BotController(object):
         self.access_tokens = config.get('controller').get('access_tokens')
         self.webhook =      config.get('controller').get('webhook')
 
-    
+    # todo.  template this so it swappable with other non-twitter interfaces
     def __create_webhook(self):
         r = Twitter.create_webhook(**self.webhook, **self.api_tokens, **self.access_tokens)
         if r != HTTPStatus.OK:
             log.error("webhook registration failed.  Error: {}".format(r))
-            exit()
+            #exit()
         return r
 
-        
+    # todo.  template this so it swappable with other non-twitter interfaces
     def run(self):
         self.__create_webhook()
         for bot, config in self.bot_config.items():
@@ -46,7 +48,10 @@ class BotController(object):
         log.debug('command = {}'.format(command))
         bot = command.get('recipient')
         if bot in self.bots:
-            r = self.bots[bot].sendCommand(command)
+            self.mqtt.publish(bot+'/command/', command)
+
+            # r = self.bots[bot].sendCommand(command)
+            r = ('', HTTPStatus.OK)
             log.debug("response: '{}'".format(r))
         else:
             log.error("Bot '{}' not found".format(bot))
@@ -54,8 +59,9 @@ class BotController(object):
             r = ('', HTTPStatus.NOT_FOUND)
         return (r)
     
-            
+    # todo.  template this so it swappable with other non-twitter interfaces
     def registerBot(self, name):
+        self.mqtt.subscribe(name+'/event')
         if self.bots[name].access_tokens != None:
             # self.bots[name].webhook_subscribe()
             r = Twitter.webhook_subscribe(**self.webhook, **self.api_tokens, **self.bots[name].access_tokens)
