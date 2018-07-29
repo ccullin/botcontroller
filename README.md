@@ -1,43 +1,50 @@
-# Note
-The application works but I am cleaning it up and documenting it for publication.
 
-# Synopsis
+# Overview
 
-Twitter is retiring the streaming interface in faviour of webhooks through the new Account Activity API.  I use the streaming API as an interface to IoT devices
-to send them commands via Direct Messages, and for the devices to send notifications, also via Direct Messages.
+I use Twitter as the web interface into home automation bots and Twitter is retiring the streaming interface in faviour
+of webhooks through the new Account Activity API.  This botController provides an Abstracted web interface and implements
+MQTT for local interface to home bots.
 
-with the move to the Account Activity API and webhooks a public interface is required nad rather than open up all IoT devices this application prodives a
-the public interface and interfaces to the IoT devices via REST APIs.
+The implemented web interface is Twitter Account Activity API using webhooks, but it is possible to implement other 
+web interfaces.
+
+with the move to the Account Activity API and webhooks a public interface is required and rather than open up all IoT devices 
+this application prodives the public interface and communicates to the IoT devices via MQTT.
 
 This application provides a webhook interface for Twitter to Post account activity to and it includes the following functions:
 - WebHook registration
-- Subscription to defined accounts
+- Subscription to defined accounts (aka bots)
 - Twitter Login for accounts to authorize this application to access their Twitter account
-- Fowarding of received Twitter Direct Messages snet to IoT devices
-- Fowarding of IoT notification events to defined twitter users via Direct Messages
+- Fowarding of received Twitter Direct Messages sent to IoT devices from defined users
+- Fowarding of IoT notification events to defined twitter administrators via Direct Messages
  
 
-
-# Code Example
-
-Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
-
-# Motivation
-
-Driven by Twitters decision to retire the streaming interface in favour of the Account activity Webhook API.
-
-# Overview
+# Code overview
 uses Flask to provide the REST structure and the Flask-OAuth library to handle the oauth_1 authenication with Twitter. The basic flow is:
 1. the webhook is registered with Twitter
-2. Try to subsribe to define IoT devices
+2. Try to subsribe to twitter accounts for defined IoT devices
 3. If this fails the admin needs to access the applicatoins via a browswer and will be redirect to Twitter Login to authorize the application.
-4. Authoirzed token and secreates are stored in a MongoDB
-4. Incoming Direct Messages are treaded as IoT commans and Posted to the IoT devices
-5. IoT status events are sent to all dedined admistrators
+4. Authoirzed tokens and secrets are stored in a MongoDB
+4. Incoming Direct Messages are treaded as IoT commands and send to IoT devices over MQTT.  IOT devices reponses are
+send as Direct Messages back to sender
+5. IoT status events are sent to all defined device admistrators via Direct Message
 
 # Installation & setup
 
-python requirements are defined in requirements.txt
+1. clone to '/usr/local/src/botController'
+2. execute './setup.sh'
+- moves files to correct directories
+- sets the file permissions and
+- configures 'alarmMonitor' to run on boot
+3. pip3 install -r requirements.txt
+4. run 'sudo service botController start'
+
+A Docker image is also available on [dockerhub](https://hub.docker.com/u/homebots/dashboard/).
+to run this docker image.
+1. sudo docker pull homebots/botcontroller
+2. see docker readme for details on how to run
+
+
 Other requirements include:
 
 1. Publically accessible application on port 443.
@@ -45,29 +52,50 @@ Twitter requires a publically accessible webhook and this applicaton is for mydo
 I have it hosted on the DMZ.  For this a dynamic DNS or static IP is required along with SSL certifictes.
 for the SSL certificate I used [letsencrypt](https://letsencrypt.org/getting-started/)
 
-2. Define environment variables for
-- 'CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_KEY', 'ACCESS_SECRET', which are the keys
-for the application configured in apps.twitter.com
-- 'ENVNAME', which is the development environment name configured in developer.twitter.com
-- 'WEBHOOK_URL', which is the Webhook url is twitter uses to post events.
-
-3. Configure the app at apps.twitter.com.  Most important is the 'callback URL' and you need to include two.
+2. Configure the app at apps.twitter.com.  Most important is the 'callback URL' and you need to include two.
 -  'https://mydomain.com/webhook/twitter' used for Twitter to post to.  This is the same as the environment vaiable above.
 -  'https://mydomain.com/webhook/twitter/oauth-authorized' used as part of login authenitcation
 -  set permissions to 'Read, Write and Access direct messages'
 
-4.  Configure 'bot-config.py' with your IoT device or Bot details.  example config:
+3.  Configure 'config.py' with your IoT device or Bot details.  example config:
 ```
-bot_config ={
-    "device1" : {                                   # A simple label. e.g. 'thermostat'
-        "screen_name": "security_123",              # Twitter screen_name of the device
-        "webhook": "http://192.168.0.10/webhook",   # webhook url of the device.  
-        "users": ["chris_cullin"]                   # lit of Twitter users that can send commands to device
+config ={
+    "SSL_cert": {
+        "SSL_CERT": "/etc/letsencrypt/live/mydomain/fullchain.pem",
+        "SSL_KEY":  "/etc/letsencrypt/live/mydomain/privkey.pem",
     },
-    "device2" : {
-        "screen_name": "stock_trader",
-        "webhook": "http://192.168.0.11/webhook",
-        "users": ["chris_cullin"]
+    "webAPI": {
+        "type": "Twitter",
+        "bots": {
+            "Twittier sacreen name of bot 1" : {
+                "name": "e.g. alarmbot",
+                "users": ["screen_name1", "screen_name2"],
+                "admins": {
+                    "screen name of admin 1": "Twitter UID ",
+                    "screen name of admin 2": "Twitter UID",
+                },
+            },
+            "screen name of bot 2" : {
+                "name": "local name of bot 2, same as configured in bot",
+                "users": ["screen_name1", "screen_name2"],
+                "admins": {
+                    "screen name of admin 1": "Twitter UID ",
+                    "screen name of admin 2": "Twitter UID",
+                },
+            },
+        },
+        "api_tokens": {
+            "CONSUMER_KEY": "xxxxxx from apps.twitter.com",
+            "CONSUMER_SECRET": "xxxxxx from apps.twitter.com",
+        },
+        "access_tokens": {
+            "ACCESS_KEY": "xxxx from apps.twitter.com",
+            "ACCESS_SECRET": "xxxx from apps.twitter.com",
+        },
+        "webhook": {
+            "WEBHOOK_URL": "https://mydomain/webhook/twitter from app.twitter.com",
+            "ENVNAME": "dev - conigured at developer.twitter.com",
+        },
     },
 }
 ```
@@ -75,7 +103,7 @@ bot_config ={
 
 
 Note:  the application provides a public notification and control interface for all IoT devices and bots on 
-the internal home network.  As such it is exposed to both the internet and internal and securing the
+the internal home network.  As such it is exposed to both the internet and internal network and securing the
 the hosting server is important, but I'll leave that to you.
 
 This code is provided as an example and not intended to be directly used in your environment.
@@ -87,8 +115,8 @@ The application has internal and external APIs.
 External APIs interface to Twitter and comprise the 1) the Account Activity and login APIs, 2) the requests
 API implemented by twitterAPI
 
-Internal APIs interface to IoT device and bots on the home network, and include 1) request to post to devices,
-and 2) a webhook for devices to send notifications to.
+Internal interface to IoT devices is MQTT.  Incomming commands will be posted to 'bot name'/command
+(for example 'alarmbt/command'), and the botContoller will subscribe to 'bot name'/response and 'bot name'/event.
 
 ## External API
 #### Twitter Account Activity and login API
@@ -105,7 +133,7 @@ and 2) a webhook for devices to send notifications to.
 
 - mydomain.com/webhook/twitter ['POST']
   the actual webhook that Twitter posts all account activity to.  This application is looking for
-Direct Messages sent from one of the Admins to one of the Iot devices/Bots.
+Direct Messages sent from one of the Users to one of the Iot devices/Bots.
 
 #### The TwitterAPI is used to send Twitter request,
 - Create WebHook
@@ -115,18 +143,13 @@ Direct Messages sent from one of the Admins to one of the Iot devices/Bots.
 
 ## Internal API
 #### The Request library is use to send requests to the IoT devices and bots
-- send Command.  Ths is a POSt to a webhook implemented in the IoT device
+- public to topic 'bot name'/command
 
-#### Webhook for IoT devices to post notifications to
-- mydomain.com/webhook/bot
+#### MQTT topic for IoT devices to post notifications to
+- subscribe to topic 'bot name'/event
+- subscribe to topic 'bot name'/response
 
-# Tests
-Describe and show how to run the tests with code examples.
 
 # Acknowledgements
 
-reference the sample code used for webhooks
-
-# License
-
-A short snippet describing the license (MIT, Apache, etc.)
+developed in collaboration with [Sam Cullin](https://samcullin.github.io/)
