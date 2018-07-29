@@ -24,7 +24,7 @@ log.info("run app")
 oauth = OAuth()
 
 # Get the Consumer tokens for this application.
-api_tokens = config.get('controller').get('api_tokens')
+api_tokens = config.get('webAPI').get('api_tokens')
 
 twitter = oauth.remote_app('twitter',
     base_url='https://api.twitter.com/1.1/',
@@ -76,9 +76,9 @@ def oauth_authorized(resp):
 
     oauth_keys = {
         'uid': resp['user_id'],
-        'screen_name': resp['screen_name'],
-        'oauth_token': resp['oauth_token'],
-        'oauth_token_secret': resp['oauth_token_secret']
+        'name': resp['screen_name'],
+        'ACCESS_TOKEN': resp['oauth_token'],
+        'ACCESS_SECRET': resp['oauth_token_secret']
     }
     
     # Save keys to DB.
@@ -117,11 +117,6 @@ def twitterEventReceived():
     log.debug("POST request")	
     requestJson = request.get_json()
 
-    def valid_user(bot_name, user):
-        bot_config = config.get("bots").get(bot_name)
-        valid_users = bot_config.get("users")
-        return (user in valid_users)
-            
     # Ignore evenerything that is not a direct message.
     if 'direct_message_events' not in requestJson.keys():
         # Event type not supported so just ignore
@@ -140,49 +135,13 @@ def twitterEventReceived():
     users =         requestJson.get('users')
     sender =        users.get(senderId).get('screen_name')
     recipient =     users.get(recipientId).get('screen_name')
-    
-    log.debug("sender name: {}, id: {}".format(sender, senderId))
-    log.debug("recipient name: {}, id: {}".format(recipient, recipientId))
-    
-    keys = Mongodb()
-    # if keys.isBot(botname=sender):
-    #     # Ignore if this is a confirmation message from a bot.
-    #     return('', HTTPStatus.OK)
-    # elif keys.isBot(botId=recipientId) and valid_user(recipient, sender):
-    if keys.isBot(botId=recipientId) and valid_user(recipient, sender):
-        # If message from valid user and to a registered bot then process.
-        command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient} 
-        log.debug(command)
-        try:
-            r = app.config['botController'].newCommand(command)
-        except Exception as e:
-            log.error("Error sending command: {}".format(e))
-            app.config['botController'].sendDirectMessage(msg="Error sending command:  Bot not Found", sender=recipient, recipientId=senderId)
-            r = ('Error sending command', HTTPStatus.NOT_FOUND)
-    else:
+    command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient}
+
+    try:
+        app.config['botController'].newCommand(command)
         r = ('', HTTPStatus.OK)
-        
-    log.debug("response: '{}'".format(r))
-    keys.close()
+    except Exception as e:
+        log.error("Error sending command: {}".format(e))
+        app.config['botController'].sendDirectMessage(msg="Error sending command:  Bot not Found", sender=recipient, recipientId=senderId)
+        r = ('Error sending command', HTTPStatus.NOT_FOUND)
     return (r)
-
-
-## will be replaced with mqtt on_message
-# Webhook to receive events from bots
-@app.route("/webhook/bot", methods=["POST"])
-def botEventReceived():
-    requestJson = request.get_json()
-    msg = requestJson.get('message')
-    sender = requestJson.get('sender')
-    recipientId = requestJson.get('recipientId')
-    log.debug("Post request received from bot: {}".format(requestJson))
-    
-    # Forward event to botController so it can notify admins as the bot.
-    r = app.config['botController'].sendDirectMessage(msg, sender, recipientId)
-    return (r)
-
-
-# might need to add a twiter send here.  Or use Twitter.py, but then
-# its spread over two files.
-#  This file becomes the TWitter API.
-# and another would be Facebook.py

@@ -1,6 +1,6 @@
 # Modify line 13 of this file /opt/conda/lib/python3.6/site-packages/flask_oauth.py
 # from 'from urlparse import urljoin' to 'from urllib.parse import urljoin'
-flask
+Flask
 Flask_OAuthlib
 Flask-OAuth
 TwitterAPI

@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import json
 import logging
 
 # local imports
@@ -10,13 +11,12 @@ log.setLevel(logging.DEBUG)
 
 
 class MQTT(mqtt.Client):
-    def __init__(self, broker, name):
+    def __init__(self, broker, name, botController):
         super().__init__(name)
-        # client=mqtt.Client("botcontroller")
-        # self.on_connect=self.onconnect
-        # self.on_message=self.onmessage
+        self.botController = botController
+        self.message_callback_add("+/response", self.__on_response)
+        self.message_callback_add("+/event", self.__on_event)
         self.connect(broker)
-        self.counter=0
         self.loop_start()        
         
     def on_connect(self, client, userdata, flags, rc):
@@ -25,11 +25,28 @@ class MQTT(mqtt.Client):
         else:
             print("Bad connection Returned code=",rc)
     
+    def __on_response(self, client, userdata, message):
+        log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
+        log.debug("message topic= {}".format(message.topic))
+        log.debug("message qos= {}".format(message.qos))
+        log.debug("message retain flag= {}".format(message.retain))
+        msg = message.payload.decode("utf-8")
+        jsonMsg = json.loads(msg.replace("'", '"'))
+        self.botController.sendMessage(**jsonMsg)
+ 
+    def __on_event(self, client, userdata, message):
+        msg = str(message.payload.decode("utf-8"))
+        self.botController.sendMessage(msg)
+        log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
+        log.debug("message topic= {}".format(message.topic))
+        log.debug("message qos= {}".format(message.qos))
+        log.debug("message retain flag= {}".format(message.retain))
+ 
+
     
     def on_message(self, client, userdata, message):
-        print("message received " ,str(message.payload.decode("utf-8")))
-        print("message topic=",message.topic)
-        print("message qos=",message.qos)
-        print("message retain flag=",message.retain)
-        
+        log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
+        log.debug("message topic= {}".format(message.topic))
+        log.debug("message qos= {}".format(message.qos))
+        log.debug("message retain flag= {}".format(message.retain))
         

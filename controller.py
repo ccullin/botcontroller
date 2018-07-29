@@ -42,7 +42,7 @@ def main():
         botController = BotController(config)
         
         # Start Flask web service in a thread so its non blocking
-        app_thread = Thread(target=start_app, name='flask-app', args=(config.get('app'), botController), daemon=True)
+        app_thread = Thread(target=start_app, name='flask-app', args=(config.get('SSL_cert'), botController), daemon=True)
         app_thread.start()
 
         botController.run()
@@ -55,10 +55,6 @@ def main():
     
         
 def start_app(config, botctl):
-    # log = logging.getLogger(__name__)
-    # log.setLevel(logging.INFO)
-
-    # log.debug(config)
     app.config['SECRET_KEY'] = 'thisissupposedtobeasecret'
     app.config['botController'] = botctl
     SSL_CERT = config.get('SSL_CERT')
