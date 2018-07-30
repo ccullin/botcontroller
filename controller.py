@@ -57,12 +57,11 @@ def main():
 def start_app(config, botctl):
     app.config['SECRET_KEY'] = 'thisissupposedtobeasecret'
     app.config['botController'] = botctl
-    SSL_CERTS = config.get('SSL_cert')
     # SSL_CERT = config.get('SSL_CERT')
     # SSL_KEY =  config.get('SSL_KEY')
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     # context.load_cert_chain(SSL_CERT, SSL_KEY)
-    context.load_cert_chain(**SSL_CERTS)
+    context.load_cert_chain(**config)
     app.run(host='0.0.0.0', port=443, debug=False, ssl_context=context, use_reloader=False, threaded=True)
     # app.run(host='0.0.0.0', port=443, debug=False, use_reloader=False, processes=3)
 
