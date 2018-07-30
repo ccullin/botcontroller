@@ -24,7 +24,9 @@ class BotController(object):
         for bot, config in self.config.get('bots').items():
             self.bots[bot] = Bot(config)
             r = self.api.subscribeBot(**self.bots[bot].keys)
-            log.debug("sucsription repose code = '{}".format(r))
+            log.debug("subscrition response code = '{}".format(r))
+            log.debug("subscribe {}/event".format(self.bots[bot].name))
+            log.debug("subscribe {}/response".format(self.bots[bot].name))
             self.mqtt.subscribe(self.bots[bot].name+'/event')
             self.mqtt.subscribe(self.bots[bot].name+'/response')
 
@@ -33,7 +35,7 @@ class BotController(object):
         bot = command.get('recipient')
         # if self.keysDB.isBot(botname = bot):
         if bot in self.bots:
-            log.debug('bot name: {}'.format(bot))
+            log.debug('publish: {}/command msg: {}'.format(self.bots[bot].name, str(command)))
             r=self.mqtt.publish(self.bots[bot].name+'/command', str(command))
             log.debug("response: '{}'".format(r))
         else:
@@ -55,13 +57,9 @@ class Bot(object):
     def __init__(self, config):
         self.name = config.get('name')
         self.__getKeys()
-        try:
-            self.config = config
-            self.admins = config.get('admins')
-            self.users = config.get('users')
-        except:
-            log.warning("error retrieving keys.  Check webhook has subscribed to user {}".format(self.name))
-            raise BotException("Bot not authorised", None)
+        self.config = config
+        self.admins = config.get('admins')
+        self.users = config.get('users')
 
     def __getKeys(self):
         db = Mongodb()
