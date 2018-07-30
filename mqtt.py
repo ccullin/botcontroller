@@ -16,7 +16,7 @@ class MQTT(mqtt.Client):
         self.botController = botController
         self.message_callback_add("+/response", self.__on_response)
         self.message_callback_add("+/event", self.__on_event)
-        self.connect(broker)
+        self.connect_async(broker)
         self.loop_start()        
         
     def on_connect(self, client, userdata, flags, rc):
