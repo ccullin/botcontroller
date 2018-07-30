@@ -33,8 +33,6 @@ class webAPI(webAPI_abstract):
         """
     
         log.debug("create webhook request")
-        log.debug("API keys {}".format(self.api_tokens))
-        log.debug("access keys {}".format(self.access_tokens))
         twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, self.ACCESS_KEY, self.ACCESS_SECRET)
         r = twitterAPI.request('account_activity/all/:%s/webhooks' % self.envname, {'url': self.webhook_url}, None, "POST")
         text = json.loads(r.text)
