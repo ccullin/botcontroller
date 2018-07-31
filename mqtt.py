@@ -21,9 +21,9 @@ class MQTT(mqtt.Client):
         
     def on_connect(self, client, userdata, flags, rc):
         if rc==0:
-            print("connected OK Returned code=",rc)
+            log.debug("connected OK Returned code= {}".format(rc))
         else:
-            print("Bad connection Returned code=",rc)
+            log.debug("Bad connection Returned code= {}".format(rc))
     
     def __on_response(self, client, userdata, message):
         log.debug("message received {}".format(str(message.payload.decode("utf-8"))))

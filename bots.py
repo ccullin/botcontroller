@@ -40,6 +40,7 @@ class BotController(object):
 
     def sendMessage(self, message, sender, recipientId):
         bot = self.keyDB.getBotName(sender)
+        log.debug("sending message: {} {} {} {}".format(bot, sender, recipientId, message))
         self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[bot].credentials)
 
     def sendEvent(self, message, sender, recipientId):
