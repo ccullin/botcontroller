@@ -8,7 +8,7 @@ import logging
 
 #local imports
 import Twitter
-from mongodb import Mongodb
+# from mongodb import Mongodb
 from config import config
 
 log = logging.getLogger(__name__)
@@ -74,18 +74,19 @@ def oauth_authorized(resp):
     if resp is None:
         return(u'You denied the request to sign in.')
 
+    WebName = resp['screen_name']
     oauth_keys = {
         'uid': resp['user_id'],
-        'name': resp['screen_name'],
         'ACCESS_TOKEN': resp['oauth_token'],
         'ACCESS_SECRET': resp['oauth_token_secret']
     }
     
     # Save keys to DB.
-    keys = Mongodb()
-    keys.storeKey(oauth_keys)
-    keys.close()
-    return ("all done") 
+    # keys = Mongodb()
+    # keys.storeConfig(webName, oauth_keys)
+    # keys.close()
+    r = app.config['botController'].updateDB(webName, oauth_keys)
+    return (r) 
 
 
 @twitter.tokengetter

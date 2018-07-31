@@ -12,20 +12,20 @@ class Mongodb():
         self.safe = self.client[db][collection]
 
 
-    def getAllKeys(self):
-        keys = self.safe.find({ 'name': { '$exists': True }})
-        if keys:
-            return keys
-        return None
+    # def getAllKeys(self):
+    #     keys = self.safe.find({ 'name': { '$exists': True }})
+    #     if keys:
+    #         return keys
+    #     return None
     
     
-    def getKeys(self, name):
-        # name = kwargs.get('name', None)
-        # screen_name = kwargs.get('screen_name',None)
-        # if name != None:
-        return(self.safe.find_one({ 'name': name }))
-        # else:
-        #     return(self.safe.find_one({'screen_name': screen_name}))
+    # def getKeys(self, name):
+    #     # name = kwargs.get('name', None)
+    #     # screen_name = kwargs.get('screen_name',None)
+    #     # if name != None:
+    #     return(self.safe.find_one({ 'name': name }))
+    #     # else:
+    #     #     return(self.safe.find_one({'screen_name': screen_name}))
 
     # def isBot(self, **kwargs):
     #     botId = kwargs.get('botId', None)
@@ -36,31 +36,38 @@ class Mongodb():
     #         return(self.safe.find_one({'name': botname}))
  
     
-    def storeKey(self, session):
-        print('session on database side ', session)
-        self.safe.update_one({'screen_name': session['screen_name']}, {'$set': 
-                                {'uid': session['uid'],
-                                'name': session['name'],
-                                'ACCESS_KEY': session['ACCESS_KEY'],
-                                'ACCESS_SECRET': session['ACCESS_SECRET']
-                                }},
-                            upsert=True)
+    def storeConfig(self, name, webName, config):
+        log.debug('update database {} {}, Config: {}'.format(name, webName, config))
+        self.safe.update_one({'name': name, {'$set': {'webName': webName, 'config': config}},upsert=True)
+        # self.safe.update_one({'webName': session['name']}, {'$set': 
+        #                         {'uid': session['uid'],
+        #                         'webName': session['name'],
+        #                         'ACCESS_KEY': session['ACCESS_KEY'],
+        #                         'ACCESS_SECRET': session['ACCESS_SECRET']
+        #                         }},
+        #                     upsert=True)
 
-    # def addName(self, name, screen_name):
-    #     self.safe.update_one({'screen_name': screen_name}, {'$set': {'name': name}}, upsert=True)
-
-
-
-    def deleteKey(self, name):
-        self.safe.delete({'name': name})
-
-    
-    def getBotConfig(self, name):
-        bot = self.safe.find_one({'name': name})
+    def getBotName(self, webName):
+        bot = self.safe.find_one({'webName': name})
         if bot:
-            return bot['data']
+            return bot['data'].name
         return None
 
+
+    # def deleteKey(self, name):
+    #     self.safe.delete({'name': name})
+
+    
+    def getBotConfig(self, **kwargs):
+        name = kwargs('name', None)
+        webName = kwargs('webName', None)
+        if name != None:
+            bot = self.safe.find_one({'name': name})
+            return bot['data'].config
+        else:
+            bot = self.safe.find_one({'webName': webName})
+            return bot['data'].config
+        
         
     def close(self):
         self.client.close()

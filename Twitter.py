@@ -10,9 +10,9 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 class webAPI(webAPI_abstract):
-    def __init__(self, config, mongodb):
+    def __init__(self, config):
         super().__init__()
-        self.db = mongodb
+        # self.db = mongodb
         self.bots =          config.get('bots')
         # self.api_tokens =    config.get('api_tokens')
         self.CONSUMER_KEY =  config.get('api_tokens').get('CONSUMER_KEY')

@@ -17,55 +17,62 @@ class BotController(object):
         self.bots = {}
         self.config = config.get('webAPI')
         self.mqtt = MQTT('192.168.0.4', name="botcontroller", botController=self)
-        self.api = webAPI(self.config, self.keysDB)
+        self.api = webAPI(self.config)
 
     def run(self):
         self.api.registerController()
         for bot, config in self.config.get('bots').items():
-            self.bots[bot] = Bot(config)
-            r = self.api.subscribeBot(**self.bots[bot].keys)
+            self.bots[bot] = Bot(bot, config)
+            r = self.api.subscribeBot(**self.bots[bot].config)
             log.debug("subscrition response code = '{}".format(r))
-            log.debug("subscribe {}/event".format(self.bots[bot].name))
-            log.debug("subscribe {}/response".format(self.bots[bot].name))
-            self.mqtt.subscribe(self.bots[bot].name+'/event')
-            self.mqtt.subscribe(self.bots[bot].name+'/response')
+            log.debug("subscribe {}/event".format(bot))
+            log.debug("subscribe {}/response".format(bot))
+            self.mqtt.subscribe(bot+'/event')
+            self.mqtt.subscribe(bot+'/response')
 
     def newCommand(self, command):
         log.debug('command = {}'.format(command))
-        bot = command.get('recipient')
+        botWebName = command.get('recipient')
         # if self.keysDB.isBot(botname = bot):
-        if bot in self.bots:
-            log.debug('publish: {}/command msg: {}'.format(self.bots[bot].name, str(command)))
-            r=self.mqtt.publish(self.bots[bot].name+'/command', str(command))
+        if (bot=self.keysDB.getBotName(botWebName)):
+            log.debug('publish: {}/command msg: {}'.format(bot, str(command)))
+            r=self.mqtt.publish(bot+'/command', str(command))
             log.debug("response: '{}'".format(r))
         else:
-            log.error("Bot '{}' not found".format(bot))
+            log.error("BotWebName '{}' not found".format(botWebName))
             log.debug("dump of self.bots: {}".format(self.bots))
 
     def sendMessage(self, message, sender, recipientId):
         log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
-        log.debug("keys {}".format(self.bots[sender].keys))
-        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[sender].keys)
+        log.debug("keys {}".format(self.bots[sender].config))
+        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[sender].config)
 
     def sendEvent(self, message, sender, recipientId):
         log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
         for admin, adminId in self.bots[sender].admins.items():
-            self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].keys)
+            self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].config)
 
+    def updateDB(self, webName, config):
+        for bot in self.bots:
+            if bot.webName == webName:
+                self.keysDB.storeConfig(bot, webName, config)
+                return('Successfully updated config')
+        return('device not config for botCOntroller, See system administrator')
 
 class Bot(object):
-    def __init__(self, config):
-        self.name = config.get('name')
-        self.__getKeys()
+    def __init__(self, name, config):
+        self.name = name
+        self.webName = config.get('webName')
+        self.__getConfig()
         self.config = config
         self.admins = config.get('admins')
         self.users = config.get('users')
 
-    def __getKeys(self):
+    def __getConfig(self):
         db = Mongodb()
-        self.keys = db.getKeys(name=self.name)
+        self.config = db.getConfig(name=self.name)
         log.debug(self.name)
-        log.debug(self.keys)
+        log.debug(self.config)
         db.close()
 
 
