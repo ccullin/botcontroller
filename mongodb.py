@@ -38,7 +38,7 @@ class Mongodb():
     
     def storeConfig(self, name, webName, config):
         log.debug('update database {} {}, Config: {}'.format(name, webName, config))
-        self.safe.update_one({'name': name, {'$set': {'webName': webName, 'config': config}},upsert=True)
+        self.safe.update_one({'name': name}, {'$set': {'webName': webName, 'config': config}},upsert=True)
         # self.safe.update_one({'webName': session['name']}, {'$set': 
         #                         {'uid': session['uid'],
         #                         'webName': session['name'],
@@ -48,9 +48,9 @@ class Mongodb():
         #                     upsert=True)
 
     def getBotName(self, webName):
-        bot = self.safe.find_one({'webName': name})
+        bot = self.safe.find_one({'webName': webName})
         if bot:
-            return bot['data'].name
+            return bot['name']
         return None
 
 
@@ -59,14 +59,14 @@ class Mongodb():
 
     
     def getBotConfig(self, **kwargs):
-        name = kwargs('name', None)
-        webName = kwargs('webName', None)
+        name = kwargs.get('name', None)
+        webName = kwargs.get('webName', None)
         if name != None:
             bot = self.safe.find_one({'name': name})
-            return bot['data'].config
+            return bot['config']
         else:
             bot = self.safe.find_one({'webName': webName})
-            return bot['data'].config
+            return bot['config']
         
         
     def close(self):

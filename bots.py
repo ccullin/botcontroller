@@ -23,7 +23,7 @@ class BotController(object):
         self.api.registerController()
         for bot, config in self.config.get('bots').items():
             self.bots[bot] = Bot(bot, config)
-            r = self.api.subscribeBot(**self.bots[bot].config)
+            r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscrition response code = '{}".format(r))
             log.debug("subscribe {}/event".format(bot))
             log.debug("subscribe {}/response".format(bot))
@@ -34,7 +34,8 @@ class BotController(object):
         log.debug('command = {}'.format(command))
         botWebName = command.get('recipient')
         # if self.keysDB.isBot(botname = bot):
-        if (bot=self.keysDB.getBotName(botWebName)):
+        bot = self.keysDB.getBotName(botWebName)
+        if bot:
             log.debug('publish: {}/command msg: {}'.format(bot, str(command)))
             r=self.mqtt.publish(bot+'/command', str(command))
             log.debug("response: '{}'".format(r))
@@ -44,18 +45,18 @@ class BotController(object):
 
     def sendMessage(self, message, sender, recipientId):
         log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
-        log.debug("keys {}".format(self.bots[sender].config))
-        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[sender].config)
+        log.debug("keys {}".format(self.bots[sender].credentials))
+        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[sender].credentials)
 
     def sendEvent(self, message, sender, recipientId):
         log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
         for admin, adminId in self.bots[sender].admins.items():
-            self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].config)
+            self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].credentials)
 
-    def updateDB(self, webName, config):
+    def updateDB(self, webName, credentials):
         for bot in self.bots:
             if bot.webName == webName:
-                self.keysDB.storeConfig(bot, webName, config)
+                self.keysDB.storeConfig(bot, webName, credentials)
                 return('Successfully updated config')
         return('device not config for botCOntroller, See system administrator')
 
@@ -70,9 +71,9 @@ class Bot(object):
 
     def __getConfig(self):
         db = Mongodb()
-        self.config = db.getConfig(name=self.name)
+        self.credentials = db.getBotConfig(name=self.name)
         log.debug(self.name)
-        log.debug(self.config)
+        log.debug(self.credentials)
         db.close()
 
 
