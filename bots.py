@@ -39,7 +39,7 @@ class BotController(object):
             log.error("BotWebName '{}' not found".format(botWebName))
 
     def sendMessage(self, message, sender, recipientId):
-        bot = self.keyDB.getBotName(sender)
+        bot = self.keysDB.getBotName(sender)
         log.debug("sending message: {} {} {} {}".format(bot, sender, recipientId, message))
         self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[bot].credentials)
 
