@@ -8,7 +8,6 @@ import logging
 
 #local imports
 import Twitter
-# from mongodb import Mongodb
 from config import config
 
 log = logging.getLogger(__name__)

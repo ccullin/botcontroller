@@ -10,31 +10,7 @@ class Mongodb():
                  db='twitter_oauth', collection='bots'):
         self.client = MongoClient(host, port)
         self.safe = self.client[db][collection]
-
-
-    # def getAllKeys(self):
-    #     keys = self.safe.find({ 'name': { '$exists': True }})
-    #     if keys:
-    #         return keys
-    #     return None
-    
-    
-    # def getKeys(self, name):
-    #     # name = kwargs.get('name', None)
-    #     # screen_name = kwargs.get('screen_name',None)
-    #     # if name != None:
-    #     return(self.safe.find_one({ 'name': name }))
-    #     # else:
-    #     #     return(self.safe.find_one({'screen_name': screen_name}))
-
-    # def isBot(self, **kwargs):
-    #     botId = kwargs.get('botId', None)
-    #     botname = kwargs.get('botname',None)
-    #     if botId != None:
-    #         return(self.safe.find_one({ 'uid': botId }))
-    #     else:
-    #         return(self.safe.find_one({'name': botname}))
- 
+        
     
     def storeConfig(self, name, webName, config):
         log.debug('update database {} {}, Config: {}'.format(name, webName, config))
@@ -52,11 +28,6 @@ class Mongodb():
         if bot:
             return bot['name']
         return None
-
-
-    # def deleteKey(self, name):
-    #     self.safe.delete({'name': name})
-
     
     def getBotConfig(self, **kwargs):
         name = kwargs.get('name', None)

@@ -25,31 +25,24 @@ class BotController(object):
             self.bots[bot] = Bot(bot, config)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscrition response code = '{}".format(r))
-            log.debug("subscribe {}/event".format(bot))
-            log.debug("subscribe {}/response".format(bot))
             self.mqtt.subscribe(bot+'/event')
             self.mqtt.subscribe(bot+'/response')
 
     def newCommand(self, command):
         log.debug('command = {}'.format(command))
         botWebName = command.get('recipient')
-        # if self.keysDB.isBot(botname = bot):
         bot = self.keysDB.getBotName(botWebName)
         if bot:
-            log.debug('publish: {}/command msg: {}'.format(bot, str(command)))
             r=self.mqtt.publish(bot+'/command', str(command))
             log.debug("response: '{}'".format(r))
         else:
             log.error("BotWebName '{}' not found".format(botWebName))
-            log.debug("dump of self.bots: {}".format(self.bots))
 
     def sendMessage(self, message, sender, recipientId):
-        log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
-        log.debug("keys {}".format(self.bots[sender].credentials))
-        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[sender].credentials)
+        bot = self.keyDB.getBotName(sender)
+        self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[bot].credentials)
 
     def sendEvent(self, message, sender, recipientId):
-        log.debug("sending '{}', to '{}' from '{}'".format(message, recipientId, sender))
         for admin, adminId in self.bots[sender].admins.items():
             self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].credentials)
 
@@ -72,8 +65,6 @@ class Bot(object):
     def __getConfig(self):
         db = Mongodb()
         self.credentials = db.getBotConfig(name=self.name)
-        log.debug(self.name)
-        log.debug(self.credentials)
         db.close()
 
 

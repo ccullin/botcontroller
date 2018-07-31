@@ -12,15 +12,12 @@ log.setLevel(logging.DEBUG)
 class webAPI(webAPI_abstract):
     def __init__(self, config):
         super().__init__()
-        # self.db = mongodb
         self.bots =          config.get('bots')
-        # self.api_tokens =    config.get('api_tokens')
         self.CONSUMER_KEY =  config.get('api_tokens').get('CONSUMER_KEY')
         self.CONSUMER_SECRET = config.get('api_tokens').get('CONSUMER_SECRET')
         self.ACCESS_KEY =    config.get('access_tokens').get('ACCESS_KEY')
         self.ACCESS_SECRET = config.get('access_tokens').get('ACCESS_SECRET')
         self.access_tokens = config.get('access_tokens')
-        # self.webhook =       config.get('webhook')
         self.webhook_url =   config.get('webhook').get('WEBHOOK_URL')
         self.envname =       config.get('webhook').get('ENVNAME')
 
