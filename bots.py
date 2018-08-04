@@ -30,7 +30,7 @@ class BotController(object):
         log.debug('command = {}'.format(command))
         botWebName = command.get('recipient')
         bot = self.keysDB.getBotName(botWebName)
-        log.debug("webName= {}, bot= {}".format(botwebName, bot))
+        log.debug("webName= {}, bot= {}".format(botWebName, bot))
         if bot:
             r=self.mqtt.publish(bot+'/command', str(command))
             log.debug("response: '{}'".format(r))
