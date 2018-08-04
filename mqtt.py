@@ -22,6 +22,9 @@ class MQTT(mqtt.Client):
     def on_connect(self, client, userdata, flags, rc):
         if rc==0:
             log.debug("connected OK Returned code= {}".format(rc))
+            for bot in self.botController.bots:
+                self.mqtt.subscribe(bot+'/event')
+                self.mqtt.subscribe(bot+'/response')
         else:
             log.debug("Bad connection Returned code= {}".format(rc))
     

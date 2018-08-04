@@ -16,7 +16,6 @@ class BotController(object):
         self.keysDB = Mongodb()
         self.bots = {}
         self.config = config.get('webAPI')
-        self.mqtt = MQTT('192.168.0.4', name="botcontroller", botController=self)
         self.api = webAPI(self.config)
 
     def run(self):
@@ -25,9 +24,8 @@ class BotController(object):
             self.bots[bot] = Bot(bot, config)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscrition response code = '{}".format(r))
-            self.mqtt.subscribe(bot+'/event')
-            self.mqtt.subscribe(bot+'/response')
-
+        self.mqtt = MQTT('192.168.0.4', name="botcontroller", botController=self)
+    
     def newCommand(self, command):
         log.debug('command = {}'.format(command))
         botWebName = command.get('recipient')
