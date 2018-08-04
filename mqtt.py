@@ -23,6 +23,7 @@ class MQTT(mqtt.Client):
         if rc==0:
             log.debug("connected OK Returned code= {}".format(rc))
             for bot in self.botController.bots:
+                log.debug("subscribing to {} for event and response".format(bot))
                 self.mqtt.subscribe(bot+'/event')
                 self.mqtt.subscribe(bot+'/response')
         else:
