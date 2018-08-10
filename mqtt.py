@@ -12,11 +12,11 @@ log.setLevel(logging.DEBUG)
 
 class MQTT(mqtt.Client):
     def __init__(self, broker, name, botController):
-        super().__init__(name, keepalive=120)
+        super().__init__(name)
         self.botController = botController
         self.message_callback_add("+/response", self.__on_response)
         self.message_callback_add("+/event", self.__on_event)
-        self.connect(broker)
+        self.connect(broker, keepalive=120)
         self.loop_start()        
         
     def on_connect(self, client, userdata, flags, rc):
