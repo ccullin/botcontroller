@@ -29,6 +29,9 @@ class MQTT(mqtt.Client):
         else:
             log.debug("Bad connection Returned code= {}".format(rc))
     
+    def on_disconnect(self, client, userdata, rc):
+        log.debug("disconnected with code: {}".format(rc))
+
     def __on_response(self, client, userdata, message):
         log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
         log.debug("message topic= {}".format(message.topic))
