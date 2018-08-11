@@ -61,7 +61,7 @@ class webAPI(webAPI_abstract):
         twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, kwargs['ACCESS_KEY'], kwargs['ACCESS_SECRET'])
         
         # [line[i:i+n] for i in range(0, len(line), n)]
-        for i in range(0, len(messageText, 100)):
+        for i in range(0, len(messageText), 100):
             msgChunk = messageText[i:i+100]
             message = {
                 "event": {
