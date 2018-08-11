@@ -77,6 +77,7 @@ class webAPI(webAPI_abstract):
         log.debug(json.dumps(message))
         r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
         log.debug("response code: {}".format(r.status_code))
+        log.debug("response: {}".format(r))
     
         return r.status_code      
     
