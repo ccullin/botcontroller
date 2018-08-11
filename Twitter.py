@@ -59,25 +59,29 @@ class webAPI(webAPI_abstract):
         recipientId = kwargs['recipientId']
         log.debug("send msg: '{}' to user: '{}'".format(messageText, recipientId))
         twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, kwargs['ACCESS_KEY'], kwargs['ACCESS_SECRET'])
-        message = {
-            "event": {
-                "type": "message_create", 
-                "message_create": {
-                    "target": {
-                        "recipient_id": recipientId
-                    }, 
-                    "message_data": {
-                        "text": messageText
+        
+        # [line[i:i+n] for i in range(0, len(line), n)]
+        for i in range(0, len(messageText, 100):
+            msgChunk = messageText[i:i+100]
+            message = {
+                "event": {
+                    "type": "message_create", 
+                    "message_create": {
+                        "target": {
+                            "recipient_id": recipientId
+                        }, 
+                        "message_data": {
+                            "text": msgChunk
+                        }
                     }
                 }
             }
-        }
-        
-        log.debug("message text:")
-        log.debug(json.dumps(message))
-        r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
-        log.debug("response code: {}".format(r.status_code))
-        log.debug("response: {}".format(r))
+            
+            log.debug("message text:")
+            log.debug(json.dumps(message))
+            r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
+            log.debug("response code: {}".format(r.status_code))
+            log.debug("response: {}".format(r))
     
         return r.status_code      
     
