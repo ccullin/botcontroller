@@ -36,8 +36,9 @@ class MQTT(mqtt.Client):
         log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
         log.debug("message topic= {}".format(message.topic))
         msg = message.payload.decode("utf-8")
-        jsonMsg = json.loads(msg.replace("'", '"'))
-        self.botController.sendMessage(**jsonMsg)
+        msgDict = json.loads(msg)
+        # jsonMsg = json.loads(msg.replace("'", '"'))
+        self.botController.sendMessage(**msgDict)
  
     def __on_event(self, client, userdata, message):
         log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
