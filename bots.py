@@ -23,7 +23,7 @@ class BotController(object):
         for bot, config in self.config.get('bots').items():
             self.bots[bot] = Bot(bot, config)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
-            log.debug("subscrition response code = '{}".format(r))
+            log.debug("subscription response code = '{}".format(r))
         self.mqtt = MQTT('192.168.0.4', name="botcontroller", botController=self)
     
     def newCommand(self, command):
@@ -42,8 +42,9 @@ class BotController(object):
         log.debug("sending message: {} {} {} {}".format(bot, sender, recipientId, message))
         self.api.sendMessage(messageText=message, recipientId=recipientId, **self.bots[bot].credentials)
 
-    def sendEvent(self, message, sender, recipientId):
+    def sendEvent(self, sender, message):
         for admin, adminId in self.bots[sender].admins.items():
+            log.debug("sending message: {} {} {} {}".format(sender, message, admin, adminId))
             self.api.sendMessage(messageText=message, recipientId=adminId, **self.bots[sender].credentials)
 
     def updateDB(self, webName, credentials):

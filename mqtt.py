@@ -33,20 +33,22 @@ class MQTT(mqtt.Client):
         log.debug("disconnected with code: {}".format(rc))
 
     def __on_response(self, client, userdata, message):
-        log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
-        log.debug("message topic= {}".format(message.topic))
+        log.debug("response received {}".format(str(message.payload.decode("utf-8"))))
+        log.debug("response topic= {}".format(message.topic))
         msg = message.payload.decode("utf-8")
         msgDict = json.loads(msg)
         # jsonMsg = json.loads(msg.replace("'", '"'))
         self.botController.sendMessage(**msgDict)
  
     def __on_event(self, client, userdata, message):
-        log.debug("message received {}".format(str(message.payload.decode("utf-8"))))
-        log.debug("message topic= {}".format(message.topic))
+        log.debug("event received {}".format(str(message.payload.decode("utf-8"))))
+        log.debug("event topic= {}".format(message.topic))
         msg = message.payload.decode("utf-8")
+        topic = message.topic
+        sender = topic.split("/")
         # jsonMsg = json.loads(msg.replace("'", '"'))
-        msgDict = json.loads(msg)
-        self.botController.sendEvent(**msgDict)
+        # msgDict = json.loads(msg)
+        self.botController.sendEvent(sender[0], msg)
 
     def on_message(self, client, userdata, message):
         log.debug("message received {}".format(str(message.payload.decode("utf-8"))))

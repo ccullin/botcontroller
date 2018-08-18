@@ -58,10 +58,10 @@ class webAPI(webAPI_abstract):
     def sendMessage(self, messageText, **kwargs):
         recipientId = kwargs['recipientId']
         log.debug("send msg: '{}' to user: '{}'".format(messageText, recipientId))
-        twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, kwargs['ACCESS_KEY'], kwargs['ACCESS_SECRET'])
+        ACCESS_KEY = kwargs.get('ACCESS_KEY', self.ACCESS_KEY)
+        ACCESS_SECRET = kwargs.get('ACCESS_SECRET', self.ACCESS_SECRET)
+        twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
         
-        # [line[i:i+n] for i in range(0, len(line), n)]
-        r= http
         for i in range(0, len(messageText), 149):
             msgChunk = messageText[i:i+149]
             message = {
