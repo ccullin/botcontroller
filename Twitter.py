@@ -61,8 +61,9 @@ class webAPI(webAPI_abstract):
         twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, kwargs['ACCESS_KEY'], kwargs['ACCESS_SECRET'])
         
         # [line[i:i+n] for i in range(0, len(line), n)]
-        for i in range(0, len(messageText), 100):
-            msgChunk = messageText[i:i+100]
+        r= http
+        for i in range(0, len(messageText), 149):
+            msgChunk = messageText[i:i+149]
             message = {
                 "event": {
                     "type": "message_create", 
@@ -83,5 +84,5 @@ class webAPI(webAPI_abstract):
             log.debug("response code: {}".format(r.status_code))
             log.debug("response: {}".format(r))
     
-        return r.status_code      
+        return HTTPStatus.OK     
     
