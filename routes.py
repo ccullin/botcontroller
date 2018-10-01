@@ -73,10 +73,10 @@ def oauth_authorized(resp):
     if resp is None:
         return(u'You denied the request to sign in.')
 
-    WebName = resp['screen_name']
+    webName = resp['screen_name']
     oauth_keys = {
         'uid': resp['user_id'],
-        'ACCESS_TOKEN': resp['oauth_token'],
+        'ACCESS_KEY': resp['oauth_token'],
         'ACCESS_SECRET': resp['oauth_token_secret']
     }
     

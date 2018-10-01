@@ -17,14 +17,17 @@ class BotController(object):
         self.bots = {}
         self.config = config.get('webAPI')
         self.api = webAPI(self.config)
+        self.ip = config.get('ip')
 
     def run(self):
-        self.api.registerController()
+        webhook_id = self.api.registerController(self.keysDB.getWebhookId())
+        if webhook_id != None:
+            self.keysDB.storeWebhookId(webhook_id)
         for bot, config in self.config.get('bots').items():
             self.bots[bot] = Bot(bot, config)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscription response code = '{}".format(r))
-        self.mqtt = MQTT('192.168.0.4', name="botcontroller", botController=self)
+        self.mqtt = MQTT(self.ip, name="botcontroller", botController=self)
     
     def newCommand(self, command):
         log.debug('command = {}'.format(command))
@@ -49,7 +52,7 @@ class BotController(object):
 
     def updateDB(self, webName, credentials):
         for bot in self.bots:
-            if bot.webName == webName:
+            if self.bots[bot].webName == webName:
                 self.keysDB.storeConfig(bot, webName, credentials)
                 return('Successfully updated config')
         return('device not config for botCOntroller, See system administrator')
