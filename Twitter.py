@@ -29,7 +29,7 @@ class webAPI(webAPI_abstract):
             Hence the request is run asynchronously
         """
     
-        def updateRegistration(self, webhook_id):
+        def _updateRegistration(webhook_id):
             """
                 Twitter make sthe webhook inactive if it has not registered each day. This function will
                 check to see if a webhook exists, and if it is in active it will be made active
@@ -37,10 +37,11 @@ class webAPI(webAPI_abstract):
             log.debug("update webhook")
             twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, self.ACCESS_KEY, self.ACCESS_SECRET)
             r = twitterAPI.request('account_activity/all/:%s/webhooks/:%s' % (self.envname, webhook_id), None, None, "PUT")
-            return r
+            return r.status_code
         
         if webhook_id != None:
-            r = updateRegistration(webhook_id)
+            log.debug("webhook_id = {}".format(webhook_id))
+            r = _updateRegistration(webhook_id)
             log.debug("update web hook return is : {}".format(r))
             if r == 204:
                 return
