@@ -39,16 +39,6 @@ class Mongodb():
             bot = self.safe.find_one({'webName': webName})
             return bot['config']
 
-    def getWebhookId(self):
-        botcontroller = self.safe.find_one({'name':'botcontroller'})
-        if botcontroller:
-            return botcontroller['config']['webhook_id']
-        return None
- 
-    def storeWebhookId(self, webhook_id):
-        self.safe.update_one({'name': 'botcontroller'}, {'$set': {'config': {'webhook_id':webhook_id}}},upsert=True)
- 
-        
     def close(self):
         self.client.close()
         

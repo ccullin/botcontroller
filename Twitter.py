@@ -22,46 +22,48 @@ class webAPI(webAPI_abstract):
         self.envname =       config.get('webhook').get('ENVNAME')
 
 
-    def registerController(self, webhook_id):
+    def registerController(self):
         """
             initiates the OAUTH 1.0 dance with twitter.  Twitter will POST a
             CRC Token confirmation request which this server needs to respond to.
             Hence the request is run asynchronously
         """
+
+        def _getWebhookId():
+            """
+                response format is:
+                {"environments":[{"environment_name":"dev","webhooks":[{"id":"1009703374093049858","url":"https://www.miplace.com/webhook/twitter","valid":tru$
+            """
+            r = twitterAPI.request('account_activity/all/webhooks', None, None, "GET")
+            log.debug("webhook status is: {}".format(r.text))
+            if r.status_code == 200:
+                text = json.loads(r.text)
+                self.webhook_id = text.get('environments')[0].get('webhooks')[0].get('id')
+                self.webhook_status = text.get('environments')[0].get('webhooks')[0].get('valid')
+            else:
+                self.webhook_id = None
+            return
     
-        def _updateRegistration(webhook_id):
+        def _wakeWebhook():
             """
                 Twitter make sthe webhook inactive if it has not registered each day. This function will
                 check to see if a webhook exists, and if it is in active it will be made active
             """
-            log.debug("update webhook")
-            twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, self.ACCESS_KEY, self.ACCESS_SECRET)
-            r = twitterAPI.request('account_activity/all/:%s/webhooks/:%s' % (self.envname, webhook_id), None, None, "PUT")
-            return r.status_code
-        
-        if webhook_id != None:
-            log.debug("webhook_id = {}".format(webhook_id))
-            r = _updateRegistration(webhook_id)
-            log.debug("update web hook return is : {}".format(r))
-            if r == 204:
-                return
-            
-        log.debug("create webhook request")
-        twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, self.ACCESS_KEY, self.ACCESS_SECRET)
-        r = twitterAPI.request('account_activity/all/:%s/webhooks' % self.envname, {'url': self.webhook_url}, None, "POST")
-        text = json.loads(r.text)
-        log.debug("Botcontroller registration return code: {}".format(r.status_code))
-        log.debug("response message: {}".format(r.text))
-    
-        if r.status_code == HTTPStatus.OK:
-            ## need to write the webhook_id to the database
-            webhook_id = text.get('id')
-            return webhook_id
-        else:
-            log.error("Botcontroller registration error return code: {}".format(r.status_code))
-            log.error("response: {}".format(r.text))
+            log.debug("wake webhook")
+            r = twitterAPI.request('account_activity/all/:%s/webhooks/:%s' % (self.envname, self.webhook_id), None, None, "PUT")
             return
             
+        twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, self.ACCESS_KEY, self.ACCESS_SECRET)
+        _getWebhookId()
+        if self.webhook_id == None:
+            log.debug("create webhook request")
+            r = twitterAPI.request('account_activity/all/:%s/webhooks' % self.envname, {'url': self.webhook_url}, None, "POST")
+            text = json.loads(r.text)
+            log.debug("Botcontroller registration return code: {}".format(r.status_code))
+            log.debug("response message: {}".format(r.text))
+        elif self.webhook_status != True:
+            _wakeWebhook()
+        return
             
     def subscribeBot(self, **kwargs):
         twitterAPI = TwitterAPI(self.CONSUMER_KEY, self.CONSUMER_SECRET, kwargs['ACCESS_KEY'], kwargs['ACCESS_SECRET'])

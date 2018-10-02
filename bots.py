@@ -20,9 +20,7 @@ class BotController(object):
         self.ip = config.get('ip')
 
     def run(self):
-        webhook_id = self.api.registerController(self.keysDB.getWebhookId())
-        if webhook_id != None:
-            self.keysDB.storeWebhookId(webhook_id)
+        self.api.registerController()
         for bot, config in self.config.get('bots').items():
             self.bots[bot] = Bot(bot, config)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
