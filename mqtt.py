@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
-import logging
+
 
 # local imports
 import logger
@@ -31,6 +31,9 @@ class MQTT(mqtt.Client):
     
     def on_disconnect(self, client, userdata, rc):
         log.debug("disconnected with code: {}".format(rc))
+        
+    def on_unsubscribe(self, client, userdata, mid):
+        log.warning("bot unsubscribed from channel")
 
     def __on_response(self, client, userdata, message):
         log.debug("response received {}".format(str(message.payload.decode("utf-8"))))
