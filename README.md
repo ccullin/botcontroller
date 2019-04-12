@@ -6,14 +6,14 @@ of webhooks through the new Account Activity API.  This botController provides a
 MQTT for local interface to home bots.
 
 The implemented web interface is Twitter Account Activity API using webhooks, but it is possible to implement other 
-web interfaces.
+web interfaces, for example discord, SMS, email or webpage.
 
-with the move to the Account Activity API and webhooks a public interface is required and rather than open up all IoT devices 
-this application prodives the public interface and communicates to the IoT devices via MQTT.
+With the move to the Account Activity API and webhooks a public interface is required and rather than open up all IoT devices 
+this application prodives the public https interface and communicates to the home IoT devices via MQTT.
 
 This application provides a webhook interface for Twitter to Post account activity to and it includes the following functions:
 - WebHook registration
-- Subscription to defined accounts (aka bots)
+- Subscription to defined Twitter accounts (each bot has a Twitter handle)
 - Twitter Login for accounts to authorize this application to access their Twitter account
 - Fowarding of received Twitter Direct Messages sent to IoT devices from defined users
 - Fowarding of IoT notification events to defined twitter administrators via Direct Messages
@@ -32,11 +32,11 @@ send as Direct Messages back to sender
 # Installation & setup
 
 1. clone to '/usr/local/src/botController'
-2. execute './setup.sh'
-- moves files to correct directories
-- sets the file permissions and
-- configures 'alarmMonitor' to run on boot
-3. pip3 install -r requirements.txt
+2. pip3 install -r requirements.txt
+3. execute './setup.sh'
+   - moves files to correct directories
+   - sets the file permissions and
+   - configures 'alarmMonitor' to run on boot
 4. run 'sudo service botController start'
 
 A Docker image is also available on [dockerhub](https://hub.docker.com/u/homebots/dashboard/).
@@ -60,9 +60,14 @@ for the SSL certificate I used [letsencrypt](https://letsencrypt.org/getting-sta
 3.  Configure 'config.py' with your IoT device or Bot details.  example config:
 ```
 config ={
+    "ip": "ip address or hostname of the botcontroller",
     "SSL_cert": {
         "SSL_CERT": "/etc/letsencrypt/live/mydomain/fullchain.pem",
         "SSL_KEY":  "/etc/letsencrypt/live/mydomain/privkey.pem",
+    },
+    "mongodb": {
+        "host": "ip address or hostname of mongodb",
+        "port": "port number for mongodb",
     },
     "webAPI": {
         "type": "Twitter",

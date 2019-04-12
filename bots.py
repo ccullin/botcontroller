@@ -22,7 +22,7 @@ class BotController(object):
     def run(self):
         self.api.registerController()
         for bot, config in self.config.get('bots').items():
-            self.bots[bot] = Bot(bot, config)
+            self.bots[bot] = Bot(bot, config, self.keysDB)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscription response code = '{}".format(r))
         self.mqtt = MQTT(self.ip, name="botcontroller", botController=self)
@@ -56,19 +56,18 @@ class BotController(object):
         return('device not config for botCOntroller, See system administrator')
 
 class Bot(object):
-    def __init__(self, name, config):
+    def __init__(self, name, config, db):
         self.name = name
         self.webName = config.get('webName')
+        self.db = db
         self.__getConfig()
         self.config = config
         self.admins = config.get('admins')
         self.users = config.get('users')
 
     def __getConfig(self):
-        db = Mongodb()
-        self.credentials = db.getBotConfig(name=self.name)
-        db.close()
-
+        self.credentials = self.db.getBotConfig(name=self.name)
+        
 
 class BotException(Exception):
     def __init__(self, message, error):

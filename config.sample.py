@@ -1,36 +1,43 @@
-bot_config ={
-    "screen_name" : {
-        "screen_name": "twitter screen_name of bot",
-        "webhook": "url of the bots webhook",
-        "users": ["screen_name of user 1 that can send commands", "user 2"]
-        "admins": {
-            "screen name of admin 1 that will receive event notifications": "twitter uid",
-            "screen name of admin 2": "twitter uid",
+config ={
+    "ip": "hostname or ip address of botcontroller",
+    "SSL_cert": {
+        "SSL_CERT": "/etc/letsencrypt/live/mydomain.com/fullchain.pem",
+        "SSL_KEY":  "/etc/letsencrypt/live/mydomain.com/privkey.pem",
+    },
+    "mongodb": {
+        "host": "hostname or ip address of mongodb",
+        "port": port number of mpngodb,
+    },
+    "webAPI": {
+        "type": "Twitter",
+        "bots": {
+            "alarmbot" : {
+                "webName": "Twitter name of bot 1",
+                "users": ["Twitter name of user 1", "Twitter name of user 2"],
+                "admins": {
+                    "Twitter user 1": "user id",
+                    "Twitter user 2": "user id",
+                },
+            },
+            "tradebot" : {
+                "webName": "Twitter name of bot 2",
+               "users": ["Twitter name of user 1", "Twitter name of user 2"],
+                "admins": {
+                    "Twitter user 1": "user id",
+                    "Twitter user 2": "user id",
+                },            },
         },
-
-    },
-    "mithermostat" : {
-        "screen_name": "mithermostat",
-        "webhook": "http://192.168.1.15/webhook",
-        "users": ["chris_cullin",]
-        "admins": {"chris_cullin": "123456"
-    },
-    "controller": {
         "api_tokens": {
-            "CONSUMER_KEY": "from apps.twitter",
-            "CONSUMER_SECRET": "from apps.twitter",
+            "CONSUMER_KEY": "xxxxxxxxxxxxxxxxxxxxx",
+            "CONSUMER_SECRET": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
         },
         "access_tokens": {
-            "ACCESS_KEY": "from apps.twitter",
-            "ACCESS_SECRET": "from apps.twitter",
+            "ACCESS_KEY": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "ACCESS_SECRET": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         },
         "webhook": {
-            "WEBHOOK_URL": "https://mydomain.com/webhook/twitter",
-            "ENVNAME": "environment name from developer.twitter account activity API setup",
+            "WEBHOOK_URL": "botcontroller webhook url that TWitter should call",
+            "ENVNAME": "Twitter API environment name",
         },
-    },
-    "app": {
-        "SSL_CERT": "directory path of SSL Cert",
-        "SSL_KEY":  "directoty path of SSL key",
     },
 }
