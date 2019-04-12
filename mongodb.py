@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 class Mongodb():
 
-    def __init__(self, host='192.168.0.15', port=27017,
+    def __init__(self, host=hostname, port=port,
                  db='twitter_oauth', collection='bots'):
         self.client = MongoClient(host, port)
         self.safe = self.client[db][collection]
