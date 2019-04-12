@@ -13,7 +13,7 @@ log.setLevel(logging.DEBUG)
 
 class BotController(object):
     def __init__(self, config):
-        self.keysDB = Mongodb()
+        self.keysDB = Mongodb(**config.get('mongodb'))
         self.bots = {}
         self.config = config.get('webAPI')
         self.api = webAPI(self.config)
