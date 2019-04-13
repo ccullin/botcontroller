@@ -60,7 +60,8 @@ for the SSL certificate I used [letsencrypt](https://letsencrypt.org/getting-sta
 3.  Configure 'config.py' with your IoT device or Bot details.  example config:
 ```
 config ={
-    "ip": "ip address or hostname of the botcontroller",
+    "mqtt_host": "ip address or hostname of the mqtt broker",
+    "name": "name of this botcontroller",
     "SSL_cert": {
         "SSL_CERT": "/etc/letsencrypt/live/mydomain/fullchain.pem",
         "SSL_KEY":  "/etc/letsencrypt/live/mydomain/privkey.pem",

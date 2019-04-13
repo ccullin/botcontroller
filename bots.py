@@ -13,11 +13,12 @@ log.setLevel(logging.DEBUG)
 
 class BotController(object):
     def __init__(self, config):
+        self.broker = config.get('mqtt_host')
+        self.name = config.get('name')
         self.keysDB = Mongodb(**config.get('mongodb'))
         self.bots = {}
         self.config = config.get('webAPI')
         self.api = webAPI(self.config)
-        self.ip = config.get('ip')
 
     def run(self):
         self.api.registerController()
@@ -25,7 +26,7 @@ class BotController(object):
             self.bots[bot] = Bot(bot, config, self.keysDB)
             r = self.api.subscribeBot(**self.bots[bot].credentials)
             log.debug("subscription response code = '{}".format(r))
-        self.mqtt = MQTT(self.ip, name="botcontroller", botController=self)
+        self.mqtt = MQTT(self.broker, name=self.name, botController=self)
     
     def newCommand(self, command):
         log.debug('command = {}'.format(command))

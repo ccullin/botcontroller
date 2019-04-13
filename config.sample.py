@@ -1,5 +1,6 @@
 config ={
-    "ip": "hostname or ip address of botcontroller",
+    "mqtt_host": "hostname or ip address of the mqtt broker",
+    "name": "name to assign to this bot controller, eg. botcontroller",
     "SSL_cert": {
         "SSL_CERT": "/etc/letsencrypt/live/mydomain.com/fullchain.pem",
         "SSL_KEY":  "/etc/letsencrypt/live/mydomain.com/privkey.pem",
