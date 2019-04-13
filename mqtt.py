@@ -25,24 +25,21 @@ class MQTT(mqtt.Client):
         self.on_connect = self.on_connect
         self.on_disconnect = self.on_disconnect
         self.on_unsubscribe = self.on_unsubscribe
-        # self.connect(broker)
         self.setupConnection()
         self.loop_start()        
         
     def setupConnection(self):
         connected = False
-        
         while not connected:
             try:
                 self.connect(self.broker)
-                print("setting connected to true")
                 connected = True
             except socket_error as serr:
                 if serr.errno != errno.ECONNREFUSED:
                     # Not the error we are looking for, re-raise
                     raise serr
                 # connection refused
-                print("the connection was refused")
+                log.debug("the connection to the MQTT broker was refused")
                 time.sleep(10)
                 
 
@@ -66,7 +63,6 @@ class MQTT(mqtt.Client):
         log.debug("response received {}".format(str(message.payload.decode("utf-8"))))
         log.debug("response topic= {}".format(message.topic))
         msg = message.payload.decode("utf-8")
-        #msgDict = json.loads(msg)
         msgDict = json.loads(msg.replace("'", '"'))
         self.botController.sendMessage(**msgDict)
  
@@ -76,8 +72,6 @@ class MQTT(mqtt.Client):
         msg = message.payload.decode("utf-8")
         topic = message.topic
         sender = topic.split("/")
-        # jsonMsg = json.loads(msg.replace("'", '"'))
-        # msgDict = json.loads(msg)
         self.botController.sendEvent(sender[0], msg)
 
     def on_message(self, client, userdata, message):
