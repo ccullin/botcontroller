@@ -120,11 +120,13 @@ def twitterEventReceived():
     # Ignore evenerything that is not a direct message.
     if 'direct_message_events' not in requestJson.keys():
         # Event type not supported so just ignore
+        log.debug("Twitter message is not a Direct Message: Ignoring")
         return ('', HTTPStatus.OK)
         
     # Ignore if not a new message.
     eventType = requestJson['direct_message_events'][0].get("type")
     if eventType != 'message_create':
+        log.debug("Twitter message is not a Message Create event:  Ignoring")
         return ('', HTTPStatus.OK)
     
     messageObject = requestJson['direct_message_events'][0].get('message_create', {})
@@ -138,6 +140,8 @@ def twitterEventReceived():
     command = {"command": messageText, "sender": sender, "senderId": senderId, "recipient": recipient}
 
     try:
+        log.debug("Twitter new command received.  Sending to botcontroller")
+        log.debug("new Command is '{}'",command)
         app.config['botController'].newCommand(command)
         r = ('', HTTPStatus.OK)
     except Exception as e:
