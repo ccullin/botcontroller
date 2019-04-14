@@ -106,6 +106,7 @@ config ={
 }
 ```
 
+4. a Mosquitto MQTT broker is running in your home network. 
 
 
 Note:  the application provides a public notification and control interface for all IoT devices and bots on 
@@ -144,16 +145,16 @@ Direct Messages sent from one of the Users to one of the Iot devices/Bots.
 #### The TwitterAPI is used to send Twitter request,
 - Create WebHook
 - Subscribe to Account Activity
-- send Diret Messages
+- send Direct Messages
 
 
 ## Internal API
-#### The Request library is use to send requests to the IoT devices and bots
-- public to topic 'bot name'/command
+#### The MQTT 'command' topics are used to send requests to the IoT devices and bots
+- publish commands to topic 'bot name'/command, which the repsective IoT devices subsribe to
 
 #### MQTT topic for IoT devices to post notifications to
-- subscribe to topic 'bot name'/event
-- subscribe to topic 'bot name'/response
+- subscribe to topic 'bot name'/event (the botcontroller subscribes to this topic)
+- subscribe to topic 'bot name'/response (the botcontroller subscribes to this topic)
 
 
 # Acknowledgements
