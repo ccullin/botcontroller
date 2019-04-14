@@ -3,9 +3,6 @@ from http import HTTPStatus
 import json
 import logging
 
-#imports to catch SSL errors
-import ssl
-
 #local imports
 from webAPI import webAPI_abstract
 
@@ -103,15 +100,9 @@ class webAPI(webAPI_abstract):
             
             log.debug("message text:")
             log.debug(json.dumps(message))
-            try:
-                r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
-                log.debug("response code: {}".format(r.status_code))
-                log.debug("response: {}".format(r))
-            except exception as sslerr:
-                if sslerr != ssl.SSLEOFError:
-                    # Not the error we are looking for, re-raise
-                    raise sslerr
-                log.debug("caught ssl EOF error: {}", sslerr)
-    
+            r = twitterAPI.request('direct_messages/events/new', json.dumps(message))
+            log.debug("response code: {}".format(r.status_code))
+            log.debug("response: {}".format(r))
+
         return HTTPStatus.OK     
     
